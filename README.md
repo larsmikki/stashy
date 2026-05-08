@@ -57,15 +57,13 @@ volumes:
   - /home/user/screenshots:/media/screenshots:ro
 ```
 
-**3. Start**
+**2. Start**
 
 ```bash
 docker compose up -d
 ```
 
 Open **http://localhost:3010**, go to **Settings → Add album**, and pick a folder (e.g. `/media/photos`).
-
----
 
 ### Updating
 
@@ -77,8 +75,6 @@ docker compose up -d
 
 Data and cache are in named volumes and survive rebuilds.
 
----
-
 ### Environment variables
 
 | Variable   | Default    | Description                        |
@@ -86,8 +82,6 @@ Data and cache are in named volumes and survive rebuilds.
 | `PORT`     | `3010`     | HTTP port                          |
 | `DATA_DIR` | `/app/data`  | SQLite database directory          |
 | `CACHE_DIR`| `/app/cache` | Thumbnail and transcode cache      |
-
----
 
 ### FFmpeg
 
@@ -97,15 +91,11 @@ FFmpeg is included in the Docker image (`ffmpeg` Alpine package). It is used for
 
 MP4 and WebM stream directly without transcoding.
 
----
-
 ## Supported formats
 
 **Images:** JPG, JPEG, PNG, GIF, WebP, BMP, TIFF
 
 **Videos:** MP4, WebM, MOV, MKV, AVI, M4V
-
----
 
 ## Development
 
@@ -136,8 +126,6 @@ npm start       # serves everything from :3010
 ```bash
 npm test -w server
 ```
-
----
 
 ## Security
 
