@@ -140,16 +140,6 @@ export interface MediaMetadata {
 export const getMediaMetadata = (mediaId: number) =>
   request<MediaMetadata | null>(`/api/media/${mediaId}/metadata`);
 
-// Search
-export const search = (params: { q: string; albumId?: number; page?: number; limit?: number }) => {
-  const qs = new URLSearchParams();
-  qs.set('q', params.q);
-  if (params.albumId) qs.set('albumId', String(params.albumId));
-  if (params.page) qs.set('page', String(params.page));
-  if (params.limit) qs.set('limit', String(params.limit));
-  return request<PaginatedResponse<MediaFile>>(`/api/search?${qs}`);
-};
-
 // Favorites
 export const toggleFavorite = (mediaId: number) =>
   request<MediaFile>(`/api/media/${mediaId}/favorite`, { method: 'PUT' });

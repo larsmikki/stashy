@@ -16,16 +16,25 @@ export function runMigrations(): void {
     )
   `);
 
-  const migrationsDir = path.join(__dirname, 'migrations');
-
-  // In production builds, migrations might be at a different path
-  // Try both the source and dist locations
-  let migrationFiles: string[] = [];
-  if (fs.existsSync(migrationsDir)) {
-    migrationFiles = fs.readdirSync(migrationsDir)
-      .filter(f => f.endsWith('.sql'))
-      .sort();
+  // Look for migration .sql files in several locations:
+  //   1. next to this file (dist/db/migrations when the Dockerfile copies them)
+  //   2. the source tree (server/src/db/migrations) — for local `node dist/...`
+  //      runs where SQL files weren't copied next to the compiled output
+  //   3. tsx/dev mode where __dirname is already the source dir
+  const candidates = [
+    path.join(__dirname, 'migrations'),
+    path.resolve(__dirname, '../../src/db/migrations'),
+    path.resolve(__dirname, '../../../src/db/migrations'),
+  ];
+  const migrationsDir = candidates.find(p => fs.existsSync(p));
+  if (!migrationsDir) {
+    console.warn('No migrations directory found; skipping migrations.');
+    return;
   }
+
+  const migrationFiles = fs.readdirSync(migrationsDir)
+    .filter(f => f.endsWith('.sql'))
+    .sort();
 
   for (const file of migrationFiles) {
     const [row] = db.exec(
