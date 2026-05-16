@@ -20,6 +20,8 @@ RUN npm run build -w server
 # --- Production stage ---
 FROM node:20-alpine
 
+# ffmpeg/curl are runtime deps; python3/make/g++ are needed only to build
+# better-sqlite3 from source (no Alpine/musl prebuilds), then removed.
 RUN apk add --no-cache ffmpeg curl
 
 WORKDIR /app
@@ -27,7 +29,9 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY server/package.json server/
 
-RUN npm ci -w server --omit=dev
+RUN apk add --no-cache --virtual .build-deps python3 make g++ \
+    && npm ci -w server --omit=dev \
+    && apk del .build-deps
 
 COPY --from=builder /app/server/dist server/dist
 COPY --from=builder /app/server/src/db/migrations server/dist/db/migrations
