@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
+import { Button, Input, Surface } from '@/components/ui';
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const { theme } = useTheme();
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,44 +25,38 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: theme.bg }}>
+    <div className="min-h-screen flex items-center justify-center px-4 bg-bg">
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-black tracking-tight gradient-text text-center mb-8">Stashy</h1>
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 rounded-2xl"
-          style={{ background: theme.surface, border: `1px solid ${theme.border}` }}
-        >
-          {error && (
-            <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#dc2626' }}>
-              {error}
-            </div>
-          )}
-          <label htmlFor="password" className="block text-sm font-medium mb-1" style={{ color: theme.text2 }}>
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg text-sm"
-            style={{
-              border: `1px solid ${theme.border}`,
-              background: theme.surface2,
-              color: theme.text,
-            }}
-            placeholder="Enter password"
-            autoFocus
-          />
-          <button
-            type="submit"
-            disabled={loading || !password}
-            className="mt-4 w-full px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
-            style={{ background: theme.gradient, border: 'none', cursor: loading || !password ? 'not-allowed' : 'pointer' }}
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
+        <form onSubmit={handleSubmit} className="p-6">
+          <Surface className="p-6">
+            {error && (
+              <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#dc2626' }}>
+                {error}
+              </div>
+            )}
+            <label htmlFor="password" className="block text-xs uppercase tracking-wider font-semibold text-text2 mb-1">
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+              autoFocus
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              fullWidth
+              className="mt-4"
+              disabled={loading || !password}
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </Surface>
         </form>
       </div>
     </div>

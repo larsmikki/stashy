@@ -1,11 +1,12 @@
 import { useEffect, useCallback, useState, type MouseEvent } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { toast } from 'sonner';
 import VideoPlayer from '@/components/VideoPlayer';
 import MediaInfoPanel from '@/components/MediaInfoPanel';
 import { fullUrl, toggleFavorite } from '@/api/client';
 import { useSwipe } from '@/hooks/useSwipe';
 import { getErrorMessage } from '@/utils/errors';
+import { useToast } from '@/components/ui';
+import { useTheme } from '@/contexts/ThemeContext';
 import type { MediaFile } from '@/types';
 
 interface Props {
@@ -23,15 +24,17 @@ export default function MediaViewer({ media, items, currentIndex, onClose, onNav
   const hasNext = currentIndex < items.length - 1;
   const isFavorite = !!media.is_favorite;
   const [showInfo, setShowInfo] = useState(false);
+  const { addToast } = useToast();
+  const { theme } = useTheme();
 
   const handleFavorite = useCallback(async () => {
     try {
       const updated = await toggleFavorite(media.id);
       onFavoriteToggle?.(updated);
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Could not update favorite'));
+      addToast(getErrorMessage(err, 'Could not update favorite'), 'error');
     }
-  }, [media.id, onFavoriteToggle]);
+  }, [media.id, onFavoriteToggle, addToast]);
 
   const swipeRef = useSwipe<HTMLDivElement>({
     onSwipeLeft: useCallback(() => { if (hasNext) onNavigate(currentIndex + 1); }, [hasNext, onNavigate, currentIndex]),
@@ -101,7 +104,8 @@ export default function MediaViewer({ media, items, currentIndex, onClose, onNav
       <button
         onClick={handleFavorite}
         aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-        className={`absolute top-4 right-24 z-30 p-2 transition-colors ${isFavorite ? 'text-yellow-400' : 'text-white/80 hover:text-yellow-400'}`}
+        className="absolute top-4 right-24 z-30 p-2 transition-opacity hover:opacity-90"
+        style={{ color: isFavorite ? theme.accent : 'rgb(255 255 255 / 0.8)' }}
         title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       >
         <svg className="w-6 h-6" fill={isFavorite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

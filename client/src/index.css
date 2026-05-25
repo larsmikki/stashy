@@ -2,6 +2,8 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@import "../../shared/design-system/tokens.css";
+
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
@@ -13,21 +15,29 @@
   }
 }
 
+:root {
+  --brand-gradient: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
+}
+
 /* ── Gradient text ──────────────────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%);
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
   font-weight: 900;
   letter-spacing: -0.01em;
 }
 
 /* ── Card hover lift ────────────────────────────────────── */
 .card-hover {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 .card-hover:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 0 0 1px rgb(from var(--color-accent) r g b / 0.20);
+  border-color: rgb(from var(--color-accent) r g b / 0.50);
 }
 
 /* ── Custom scrollbar ───────────────────────────────────── */
@@ -39,11 +49,11 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(244, 63, 94, 0.3);
+  background: rgb(from var(--color-accent) r g b / 0.30);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(244, 63, 94, 0.5);
+  background: rgb(from var(--color-accent) r g b / 0.50);
 }
 
 /* ── Focus ring reset ───────────────────────────────────── */
@@ -52,3 +62,10 @@ textarea:focus-visible,
 select:focus-visible {
   outline: none;
 }
+
+/* Toast slide-in (used by ui/Toast.tsx). */
+@keyframes toast-slide-in {
+  from { transform: translateX(16px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.toast-slide-in { animation: toast-slide-in 200ms ease-out; }

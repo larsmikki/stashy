@@ -83,7 +83,7 @@ router.get('/media/:mediaId/metadata', (req: Request, res: Response) => {
     const db = getDb();
     const mediaId = Number(req.params.mediaId);
     const result = db.exec(
-      `SELECT date_taken, camera_make, camera_model, lens, width, height,
+      `SELECT camera_make, camera_model, lens, width, height,
               orientation, iso, focal_length, f_number, exposure_time, gps_lat, gps_lon
        FROM media_metadata WHERE media_id = $id`,
       { $id: mediaId },
@@ -94,10 +94,10 @@ router.get('/media/:mediaId/metadata', (req: Request, res: Response) => {
     }
     const r = result[0].values[0];
     res.json({
-      date_taken: r[0], camera_make: r[1], camera_model: r[2], lens: r[3],
-      width: r[4], height: r[5], orientation: r[6], iso: r[7],
-      focal_length: r[8], f_number: r[9], exposure_time: r[10],
-      gps_lat: r[11], gps_lon: r[12],
+      camera_make: r[0], camera_model: r[1], lens: r[2],
+      width: r[3], height: r[4], orientation: r[5], iso: r[6],
+      focal_length: r[7], f_number: r[8], exposure_time: r[9],
+      gps_lat: r[10], gps_lon: r[11],
     });
   } catch (err) {
     res.status(500).json({ error: getErrorMessage(err, 'Failed to fetch metadata') });

@@ -26,10 +26,13 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-          <div className="max-w-md text-center p-8">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Something went wrong</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <div className="min-h-screen flex items-center justify-center bg-bg text-text px-4">
+          <div
+            className="max-w-md text-center p-8 rounded-2xl"
+            style={{ background: 'var(--theme-surface)', border: '1px solid var(--theme-border)', boxShadow: 'var(--shadow-card)' }}
+          >
+            <h1 className="text-2xl font-extrabold tracking-tight text-text mb-2">Something went wrong</h1>
+            <p className="text-sm text-text2 mb-6">
               {this.state.error?.message || 'An unexpected error occurred.'}
             </p>
             <button
@@ -37,9 +40,10 @@ export default class ErrorBoundary extends Component<Props, State> {
                 this.setState({ hasError: false, error: null });
                 window.location.href = '/';
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="inline-flex h-9 items-center justify-center rounded-lg px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: 'var(--brand-gradient)' }}
             >
-              Go Home
+              Go home
             </button>
           </div>
         </div>

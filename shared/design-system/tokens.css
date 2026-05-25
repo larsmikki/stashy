@@ -1,0 +1,150 @@
+/* ==========================================================================
+   App Fleet Design Tokens
+   ==========================================================================
+   Single source of truth for design tokens across the app fleet (Reely,
+   Stashy, Remindy, Boxy, Budgety, Tradey, Linky, Prompty, Applyr, Pingly,
+   Combatr).
+
+   ─── HOW THIS FILE IS USED ─────────────────────────────────────────────
+   Each app's `client/src/index.css` should:
+     1. @import "tailwindcss";
+     2. @import this file (or paste its contents).
+     3. Add the per-app @theme block (only --color-accent + gradient stops
+        plus the brand display font, if any) AFTER this file's @theme.
+
+   Each app's ThemeContext continues to write --theme-* vars on <html> for
+   runtime theme switching. The @theme block below maps the Tailwind-named
+   --color-* vars to those --theme-* vars, so utilities like `bg-surface`
+   and `text-text2` resolve to the active theme without any inline-style
+   plumbing.
+
+   ─── TOKEN PHILOSOPHY ──────────────────────────────────────────────────
+   • px values for everything visual (avoids rem ambiguity).
+   • Names match what the fleet already calls them in ThemeContext + APPS.md
+     (bg, surface, surface2, border, text, text2, accent). The Tailwind
+     utilities `bg-bg`, `text-text` etc. look slightly awkward but keep
+     a 1:1 mapping with the runtime contract. Don't rename here.
+   ========================================================================== */
+
+/* ─── Fonts (loaded externally; declared here for reference) ─────────────── */
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'); */
+
+/* ─── Theme variable contract (defaults for when no theme is active) ────── */
+/* ThemeContext overwrites these on <html> at runtime. The defaults below
+   are the canonical Light/Default values; pick one of your real themes if
+   you want a different out-of-the-box look. */
+:root {
+  --theme-bg:       #f4f5f7;
+  --theme-surface:  #ffffff;
+  --theme-surface2: #e9ebef;
+  --theme-border:   rgba(0, 0, 0, 0.09);
+  --theme-text:     #09090b;
+  --theme-text2:    #71717a;
+  --theme-accent:   #8b5cf6;          /* per-app overrides this */
+  --theme-gradient: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent) 100%);
+}
+
+/* ─── @theme: Tailwind v4 token block ─────────────────────────────────────
+   Every variable named --color-*, --radius-*, --shadow-*, --font-*, etc.
+   in here becomes a Tailwind utility (bg-*, rounded-*, shadow-*, font-*).
+   ─────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* ── Type ─────────────────────────────────────────────────────────────── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+
+  /* ── Theme colors (route through --theme-*) ──────────────────────────── */
+  --color-bg:       var(--theme-bg);
+  --color-surface:  var(--theme-surface);
+  --color-surface2: var(--theme-surface2);
+  --color-border:   var(--theme-border);
+  --color-text:     var(--theme-text);
+  --color-text2:    var(--theme-text2);
+  --color-accent:   var(--theme-accent);
+
+  /* ── Semantic feedback (fixed across themes) ─────────────────────────── */
+  --color-success: #16a34a;
+  --color-danger:  #dc2626;
+  --color-warning: #f59e0b;
+
+  /* ── Radii ladder ────────────────────────────────────────────────────── */
+  --radius-sm:   6px;     /* small chips, inline tags */
+  --radius-md:   8px;     /* small inputs, nav items */
+  --radius-lg:   10px;    /* primary buttons (DESIGN-GUIDE legacy), medium inputs */
+  --radius-xl:   12px;    /* content cards, prominent buttons, search input */
+  --radius-2xl:  16px;    /* section panels (settings), modals */
+  --radius-pill: 9999px;
+
+  /* ── Shadows ─────────────────────────────────────────────────────────── */
+  /* Two card recipes — pick by element kind:                                */
+  /*   Content card  (prompt, item, row) → shadow-card-soft (lighter)        */
+  /*   Section panel (settings, info)    → shadow-card      (canonical)      */
+  --shadow-card:        0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card-soft:   0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover:  0 4px 20px rgba(0, 0, 0, 0.12);
+  --shadow-btn-primary: 0 4px 14px rgba(0, 0, 0, 0.20);  /* override per-app w/ accent-tinted */
+  --shadow-pill-active: 0 2px 8px rgba(0, 0, 0, 0.20);
+  --shadow-modal:       0 24px 64px rgba(0, 0, 0, 0.40);
+
+  /* ── Layout constants ────────────────────────────────────────────────── */
+  --header-height: 64px;
+  --footer-height: 48px;
+}
+
+/* ─── Dark-theme adjustments (when <html class="dark">) ─────────────────── */
+/* Apps with a dark theme should toggle the `dark` class on <html> (Combatr
+   already does this via ThemeContext). Card shadows lift heavier on dark
+   backgrounds to remain perceptible. */
+html.dark {
+  --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.40);
+  --shadow-card-soft:  0 1px 4px rgba(0, 0, 0, 0.40);
+  --shadow-card-hover: 0 4px 20px rgba(0, 0, 0, 0.55);
+}
+
+/* ─── Body baseline ─────────────────────────────────────────────────────── */
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Brand gradient text utility ───────────────────────────────────────── */
+/* App should set --brand-gradient in :root to override the default. */
+:root {
+  --brand-gradient: var(--theme-gradient);
+}
+.gradient-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ─── Card hover lift (opt-in via .card-hover) ──────────────────────────── */
+.card-hover {
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover), 0 0 0 1px rgb(from var(--color-accent) r g b / 0.20);
+  border-color: rgb(from var(--color-accent) r g b / 0.50);
+}
+
+/* ─── Scrollbar (themed via --color-accent) ─────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgb(from var(--color-accent) r g b / 0.30);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(from var(--color-accent) r g b / 0.50);
+}
+
+/* ─── Native focus rings off; we rely on border state ───────────────────── */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible { outline: none; }

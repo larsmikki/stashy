@@ -27,9 +27,35 @@ export const THEMES: ThemeDefinition[] = [
     border: 'rgba(0,0,0,0.09)',
     text: '#09090b',
     text2: '#71717a',
-    accent: '#f43f5e',
-    gradient: 'linear-gradient(135deg, #fb7185 0%, #be185d 100%)',
-    previewColors: ['#e8eaed', '#d1d5db', '#f43f5e'],
+    accent: '#ea580c',
+    gradient: 'linear-gradient(135deg, #f97316 0%, #c2410c 100%)',
+    previewColors: ['#e8eaed', '#d1d5db', '#ea580c'],
+  },
+  {
+    name: 'Dark',
+    mode: 'dark',
+    bg: '#0a0a0f',
+    surface: '#111118',
+    surface2: '#1a1a28',
+    border: 'rgba(234,88,12,0.18)',
+    text: '#f0f0ff',
+    text2: '#8884a8',
+    accent: '#ea580c',
+    gradient: 'linear-gradient(135deg, #f97316 0%, #c2410c 100%)',
+    previewColors: ['#1a1a28', '#2e1b1b', '#ea580c'],
+  },
+  {
+    name: 'Midnight',
+    mode: 'dark',
+    bg: '#050814',
+    surface: '#0d1117',
+    surface2: '#161b22',
+    border: 'rgba(6,182,212,0.15)',
+    text: '#e2f8ff',
+    text2: '#7d8ea0',
+    accent: '#06b6d4',
+    gradient: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
+    previewColors: ['#161b22', '#0d2a35', '#06b6d4'],
   },
   {
     name: 'Rainbow',
@@ -122,32 +148,6 @@ export const THEMES: ThemeDefinition[] = [
     gradient: 'linear-gradient(135deg, #343a40 0%, #495057 100%)',
     previewColors: ['#f1f3f5', '#e9ecef', '#dee2e6'],
   },
-  {
-    name: 'Dark',
-    mode: 'dark',
-    bg: '#0a0a0f',
-    surface: '#111118',
-    surface2: '#1a1a28',
-    border: 'rgba(251,113,133,0.18)',
-    text: '#f0f0ff',
-    text2: '#8884a8',
-    accent: '#fb7185',
-    gradient: 'linear-gradient(135deg, #fb7185 0%, #be185d 100%)',
-    previewColors: ['#1a1a28', '#2d1b2e', '#fb7185'],
-  },
-  {
-    name: 'Midnight',
-    mode: 'dark',
-    bg: '#050814',
-    surface: '#0d1117',
-    surface2: '#161b22',
-    border: 'rgba(6,182,212,0.15)',
-    text: '#e2f8ff',
-    text2: '#7d8ea0',
-    accent: '#06b6d4',
-    gradient: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
-    previewColors: ['#161b22', '#0d2a35', '#06b6d4'],
-  },
 ];
 
 interface ThemeContextValue {
@@ -181,13 +181,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     localStorage.setItem(STORAGE_KEY, theme.name);
 
-    root.style.setProperty('--settings-bg', theme.bg);
-    root.style.setProperty('--settings-surface', theme.surface);
-    root.style.setProperty('--settings-surface2', theme.surface2);
-    root.style.setProperty('--settings-border', theme.border);
-    root.style.setProperty('--settings-text', theme.text);
-    root.style.setProperty('--settings-text2', theme.text2);
-    root.style.setProperty('--settings-accent', theme.accent);
+    root.style.setProperty('--theme-bg', theme.bg);
+    root.style.setProperty('--theme-surface', theme.surface);
+    root.style.setProperty('--theme-surface2', theme.surface2);
+    root.style.setProperty('--theme-border', theme.border);
+    root.style.setProperty('--theme-text', theme.text);
+    root.style.setProperty('--theme-text2', theme.text2);
+    root.style.setProperty('--theme-accent', theme.accent);
+    root.style.setProperty('--theme-gradient', theme.gradient);
+
   }, [theme]);
 
   const toggle = useCallback(() => {

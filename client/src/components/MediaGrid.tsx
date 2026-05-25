@@ -1,7 +1,6 @@
 import { forwardRef, useRef } from 'react';
 import { VirtuosoGrid } from 'react-virtuoso';
 import ThumbnailCard from '@/components/ThumbnailCard';
-import { useTheme } from '@/contexts/ThemeContext';
 import type { MediaFile } from '@/types';
 
 interface Props {
@@ -35,12 +34,11 @@ const ItemContainer = (props: React.HTMLAttributes<HTMLDivElement>) => (
 );
 
 export default function MediaGrid({ items, onMediaClick, onFavoriteToggle, emptyMessage, selection, onEndReached, loadingMore }: Props) {
-  const { theme } = useTheme();
   const anchorRef = useRef<number | null>(null);
 
   if (!items.length) {
     return (
-      <p className="text-center py-12" style={{ color: theme.text2 }}>
+      <p className="text-center py-12 text-text2">
         {emptyMessage ?? 'No media found. Try scanning this album first.'}
       </p>
     );
@@ -83,7 +81,7 @@ export default function MediaGrid({ items, onMediaClick, onFavoriteToggle, empty
         }}
       />
       {loadingMore && (
-        <p className="text-center py-4" style={{ color: theme.text2 }}>Loading more…</p>
+        <p className="text-center py-4 text-text2">Loading more…</p>
       )}
     </>
   );

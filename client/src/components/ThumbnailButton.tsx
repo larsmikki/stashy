@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { generateThumbnails, getThumbnailStatus } from '@/api/client';
 import { SCAN_POLL_INTERVAL_MS } from '@/constants';
 import type { ThumbnailStatus } from '@/types';
+import { Button } from '@/components/ui';
 
 interface Props {
   albumId: number;
@@ -58,13 +59,11 @@ export default function ThumbnailButton({ albumId, size = 'sm' }: Props) {
 
   if (status && status.total === 0) return null;
 
-  const btnClass = size === 'sm'
-    ? `settings-action-btn ${allDone ? '' : 'settings-action-btn-purple'}`
-    : '';
-
   return (
     <div className="inline-flex items-center gap-1.5">
-      <button
+      <Button
+        size={size}
+        variant="secondary"
         onClick={handleGenerate}
         disabled={generating || allDone}
         title={
@@ -74,8 +73,6 @@ export default function ThumbnailButton({ albumId, size = 'sm' }: Props) {
             ? 'Generating thumbnails...'
             : `Generate thumbnails (${status?.pending ?? 0} pending, ${status?.failed ?? 0} failed)`
         }
-        className={`${btnClass} inline-flex items-center gap-1`}
-        style={allDone ? { background: 'var(--settings-surface2, #f3f4f6)', color: 'var(--settings-text2, #6b7084)' } : undefined}
       >
         {generating ? (
           <>
@@ -100,7 +97,7 @@ export default function ThumbnailButton({ albumId, size = 'sm' }: Props) {
             Thumbs
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

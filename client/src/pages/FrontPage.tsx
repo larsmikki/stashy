@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getHome } from '@/api/client';
 import { getErrorMessage } from '@/utils/errors';
 import AlbumRow from '@/components/AlbumRow';
 import MediaViewer from '@/components/MediaViewer';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Button } from '@/components/ui';
 import type { HomeAlbum, MediaFile } from '@/types';
 
 export default function FrontPage() {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [albums, setAlbums] = useState<HomeAlbum[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,10 +32,18 @@ export default function FrontPage() {
     setViewerIndex(idx >= 0 ? idx : 0);
   };
 
+  const handleFavoriteToggle = (updated: MediaFile) => {
+    setAlbums(prev => prev.map(album => ({
+      ...album,
+      media: album.media.map(m => m.id === updated.id ? updated : m),
+    })));
+    if (viewerMedia?.id === updated.id) setViewerMedia(updated);
+  };
+
   const albumsWithMedia = albums.filter(a => a.media.length > 0);
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <>
       {error && (
         <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#dc2626' }}>
           {error}
@@ -47,13 +57,9 @@ export default function FrontPage() {
           <p className="mb-4" style={{ color: theme.text2 }}>
             No albums configured yet, or albums haven't been scanned.
           </p>
-          <Link
-            to="/settings"
-            className="inline-block px-4 py-2 rounded-lg text-white font-medium"
-            style={{ background: theme.gradient }}
-          >
-            Add an Album
-          </Link>
+          <Button variant="primary" onClick={() => navigate('/settings')}>
+            Add album
+          </Button>
         </div>
       ) : (
         <div>
@@ -70,6 +76,7 @@ export default function FrontPage() {
               key={album.id}
               album={album}
               onMediaClick={handleMediaClick}
+              onFavoriteToggle={handleFavoriteToggle}
             />
           ))}
         </div>
@@ -85,8 +92,9 @@ export default function FrontPage() {
             setViewerIndex(idx);
             setViewerMedia(viewerItems[idx]);
           }}
+          onFavoriteToggle={handleFavoriteToggle}
         />
       )}
-    </div>
+    </>
   );
 }

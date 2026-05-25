@@ -9,13 +9,13 @@ import LoginPage from '@/pages/LoginPage';
 import DonatePage from '@/pages/DonatePage';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import { Toaster } from 'sonner';
+import { ToastProvider } from '@/components/ui';
 
 function AppRoutes() {
   const { loading, passwordSet, authenticated } = useAuth();
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ color: '#9ca3af' }}>Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-bg text-text2">Loading...</div>;
   }
 
   if (passwordSet && !authenticated) {
@@ -40,8 +40,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppRoutes />
-        <Toaster position="bottom-right" theme="dark" richColors closeButton />
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   );

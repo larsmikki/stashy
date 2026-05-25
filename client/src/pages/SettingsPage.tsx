@@ -11,7 +11,7 @@ import ScanButton from '@/components/ScanButton';
 import ThumbnailButton from '@/components/ThumbnailButton';
 import PasswordSettings from '@/components/PasswordSettings';
 import type { Album } from '@/types';
-import '@/pages/settings.css';
+import { Button, Surface } from '@/components/ui';
 
 // A row in the combined album+favorites list
 interface CombinedRow {
@@ -23,6 +23,26 @@ interface CombinedRow {
   scan_status?: string;
   isFavorites: boolean;
   albumData?: Album;
+}
+
+const statusStyles: Record<string, { label: string; background: string; color: string }> = {
+  completed: { label: 'completed', background: '#dcfce7', color: '#16a34a' },
+  scanning: { label: 'scanning', background: '#fef3c7', color: '#a16207' },
+  error: { label: 'error', background: '#fee2e2', color: '#dc2626' },
+  idle: { label: 'idle', background: '#f3f4f6', color: '#6b7280' },
+  virtual: { label: 'virtual', background: '#f3f4f6', color: '#6b7280' },
+};
+
+function StatusBadge({ status }: { status?: string }) {
+  const meta = statusStyles[status || 'idle'] || statusStyles.idle;
+  return (
+    <span
+      className="inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-medium"
+      style={{ background: meta.background, color: meta.color }}
+    >
+      {meta.label}
+    </span>
+  );
 }
 
 export default function SettingsPage() {
@@ -245,79 +265,52 @@ export default function SettingsPage() {
     setDragIndex(null);
   };
 
-  const getStatusClass = (status: string | undefined) => {
-    switch (status) {
-      case 'completed': return 'settings-status-completed';
-      case 'scanning': return 'settings-status-scanning';
-      case 'error': return 'settings-status-error';
-      default: return 'settings-status-idle';
-    }
-  };
-
   const combinedList = buildCombinedList();
 
-  const sectionStyle = {
-    background: theme.surface,
-    border: `1px solid ${theme.border}`,
-    borderRadius: '16px',
-    padding: '24px',
-    marginBottom: '20px',
-  };
-
   return (
-    <div className="p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: theme.text }}>
+          <h1 className="text-2xl font-extrabold tracking-tight text-text">
             Settings
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: theme.text2 }}>
+          <p className="text-sm mt-0.5 text-text2">
             Manage albums, themes, and preferences.
           </p>
         </div>
 
         {error && (
-          <div className="settings-error">{error}</div>
+          <Surface className="mb-4 px-4 py-3 text-sm" style={{ background: '#fee2e2', borderColor: '#fecaca', color: '#dc2626' }}>
+            {error}
+          </Surface>
         )}
 
         {/* Theme Section */}
-        <div style={sectionStyle}>
-          <h2 className="text-base font-bold mb-1" style={{ color: theme.text }}>Themes</h2>
-          <p style={{ fontSize: '12px', color: theme.text2, marginBottom: '20px' }}>
+        <Surface className="p-6 mb-5">
+          <h2 className="text-base font-bold mb-1 text-text">Themes</h2>
+          <p className="text-xs text-text2 mb-5">
             Choose how Stashy looks to you.
           </p>
           <ThemePicker />
-        </div>
+        </Surface>
 
         {/* Albums Section */}
-        <div style={sectionStyle}>
-          <h2 className="text-base font-bold mb-1" style={{ color: theme.text }}>Albums</h2>
-          <p style={{ fontSize: '12px', color: theme.text2, marginBottom: '20px' }}>
+        <Surface className="p-6 mb-5">
+          <h2 className="text-base font-bold mb-1 text-text">Albums</h2>
+          <p className="text-xs text-text2 mb-5">
             Add folders, scan for media, and reorder how albums appear.
           </p>
 
-          <div className="settings-buttons" style={{ marginBottom: 16 }}>
-            <button
-              onClick={() => { setShowCreate(true); setEditingAlbum(null); }}
-              className="btn btn-primary"
-            >
-              Add Album
-            </button>
-            <button
-              onClick={handleScanAll}
-              disabled={scanningAll || albums.length === 0}
-              className="btn btn-secondary"
-            >
-              {scanningAll ? 'Scanning All...' : 'Scan All'}
-            </button>
-            <button
-              onClick={handleGenerateAllThumbnails}
-              disabled={generatingAll || albums.length === 0}
-              className="btn btn-secondary"
-            >
-              {generatingAll ? 'Generating...' : 'All Thumbnails'}
-            </button>
+          <div className="mb-4 flex flex-wrap gap-2.5">
+            <Button variant="primary" onClick={() => { setShowCreate(true); setEditingAlbum(null); }}>
+              Add album
+            </Button>
+            <Button variant="secondary" onClick={handleScanAll} disabled={scanningAll || albums.length === 0}>
+              {scanningAll ? 'Scanning...' : 'Scan all'}
+            </Button>
+            <Button variant="secondary" onClick={handleGenerateAllThumbnails} disabled={generatingAll || albums.length === 0}>
+              {generatingAll ? 'Generating...' : 'All thumbnails'}
+            </Button>
           </div>
 
           {showCreate && (
@@ -339,18 +332,18 @@ export default function SettingsPage() {
           )}
 
           {loading ? (
-            <p className="settings-info-text">Loading...</p>
+            <p className="text-sm text-text2">Loading...</p>
           ) : albums.length === 0 ? (
-            <p className="settings-info-text">No albums yet. Click "Add Album" to get started.</p>
+            <p className="text-sm text-text2">No albums yet. Add your first album to get started.</p>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table className="settings-album-table">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-[13px]">
                 <thead>
                   <tr>
-                    <th style={{ width: 32 }}></th>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
+                    <th className="w-8 border-b px-3 py-2 text-xs font-medium text-text2" style={{ borderColor: theme.border }}></th>
+                    <th className="border-b px-3 py-2 text-xs font-medium text-text2" style={{ borderColor: theme.border }}>Name</th>
+                    <th className="border-b px-3 py-2 text-xs font-medium text-text2" style={{ borderColor: theme.border }}>Status</th>
+                    <th className="border-b px-3 py-2 text-right text-xs font-medium text-text2" style={{ borderColor: theme.border }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -362,11 +355,13 @@ export default function SettingsPage() {
                       onDragOver={(e) => handleDragOver(e, index)}
                       onDrop={handleDrop}
                       onDragEnd={handleDragEnd}
-                      style={{ opacity: dragIndex === index ? 0.4 : 1 }}
-                      className={row.isFavorites ? 'settings-favorites-row' : ''}
+                      style={{
+                        opacity: dragIndex === index ? 0.4 : 1,
+                        background: row.isFavorites ? theme.surface2 : 'transparent',
+                      }}
                     >
-                      <td>
-                        <span className="settings-drag-handle">
+                      <td className="border-b px-3 py-2 text-text" style={{ borderColor: theme.border }}>
+                        <span className="inline-flex cursor-grab px-1 text-text2 active:cursor-grabbing">
                           <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
                             <circle cx="9" cy="5" r="1.5" />
                             <circle cx="15" cy="5" r="1.5" />
@@ -377,54 +372,63 @@ export default function SettingsPage() {
                           </svg>
                         </span>
                       </td>
-                      <td style={{ fontWeight: 500 }}>
+                      <td className="border-b px-3 py-2 font-medium text-text" style={{ borderColor: theme.border }}>
                         {row.isFavorites ? (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b">
+                          <span className="flex items-center gap-1.5">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-warning">
                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                             </svg>
                             {row.name}
                           </span>
                         ) : row.name}
                       </td>
-                      <td>
+                      <td className="border-b px-3 py-2" style={{ borderColor: theme.border }}>
                         {row.isFavorites ? (
-                          <span className="settings-status-badge settings-status-idle">virtual</span>
+                          <StatusBadge status="virtual" />
                         ) : (
-                          <span className={`settings-status-badge ${getStatusClass(row.scan_status)}`}>
-                            {row.scan_status || 'idle'}
-                          </span>
+                          <StatusBadge status={row.scan_status} />
                         )}
                       </td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td className="border-b px-3 py-2 text-right" style={{ borderColor: theme.border }}>
                         {row.isFavorites ? (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-                            <span style={{ fontSize: 12, color: theme.text2 }}>Show on home</span>
-                            <label className="settings-toggle" style={{ width: 'auto' }}>
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-xs text-text2">Show on home</span>
+                            <label className="relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full border transition-colors"
+                              style={{
+                                background: settings?.favorites_on_home ? theme.accent : theme.surface2,
+                                borderColor: settings?.favorites_on_home ? theme.accent : theme.border,
+                              }}
+                            >
                               <input
+                                className="sr-only"
                                 type="checkbox"
                                 checked={settings?.favorites_on_home ?? false}
                                 onChange={e => handleToggleFavoritesOnHome(e.target.checked)}
                               />
-                              <span className="toggle-slider" />
+                              <span
+                                className="absolute top-0.5 h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-[left]"
+                                style={{ left: settings?.favorites_on_home ? 20 : 2 }}
+                              />
                             </label>
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
+                          <div className="flex items-center justify-end gap-1.5">
                             <ThumbnailButton albumId={row.id} size="sm" />
                             <ScanButton albumId={row.id} onComplete={refresh} size="sm" />
-                            <button
+                            <Button
+                              size="sm"
+                              variant="secondary"
                               onClick={() => { setEditingAlbum(row.albumData!); setShowCreate(false); }}
-                              className="settings-action-btn settings-action-btn-blue"
                             >
                               Edit
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="danger"
                               onClick={() => handleDelete(row.albumData!)}
-                              className="settings-action-btn settings-action-btn-red"
                             >
                               Delete
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </td>
@@ -434,35 +438,27 @@ export default function SettingsPage() {
               </table>
             </div>
           )}
-        </div>
+        </Surface>
 
         {/* Data Section */}
-        <div style={sectionStyle}>
-          <h2 className="text-base font-bold mb-1" style={{ color: theme.text }}>Data</h2>
-          <p style={{ fontSize: '12px', color: theme.text2, marginBottom: '20px' }}>
+        <Surface className="p-6 mb-5">
+          <h2 className="text-base font-bold mb-1 text-text">Data</h2>
+          <p className="text-xs text-text2 mb-5">
             Export or import your album configuration as JSON. This saves album names, paths, and order — not media files.
           </p>
           <div className="flex gap-3">
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all hover:opacity-80"
-              style={{ background: theme.surface2, color: theme.text, border: `1px solid ${theme.border}` }}
-            >
+            <Button variant="secondary" onClick={handleExport}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
               Export Settings
-            </button>
-            <button
-              onClick={() => document.getElementById('stashy-import-input')?.click()}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all hover:opacity-80"
-              style={{ background: theme.surface2, color: theme.text, border: `1px solid ${theme.border}` }}
-            >
+            </Button>
+            <Button variant="secondary" onClick={() => document.getElementById('stashy-import-input')?.click()}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
               </svg>
               Import Settings
-            </button>
+            </Button>
             <input
               id="stashy-import-input"
               type="file"
@@ -471,17 +467,16 @@ export default function SettingsPage() {
               onChange={handleImport}
             />
           </div>
-        </div>
+        </Surface>
 
         {/* Password Protection Section */}
-        <div className="settings-section" style={sectionStyle}>
-          <h2 className="text-base font-bold mb-1" style={{ color: theme.text }}>Password protection</h2>
-          <p style={{ fontSize: '12px', color: theme.text2, marginBottom: '20px' }}>
+        <Surface className="p-6">
+          <h2 className="text-base font-bold mb-1 text-text">Password protection</h2>
+          <p className="text-xs text-text2 mb-5">
             Optionally lock Stashy with a password.
           </p>
           <PasswordSettings />
-        </div>
-      </div>
+        </Surface>
     </div>
   );
 }

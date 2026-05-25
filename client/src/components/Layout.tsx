@@ -48,7 +48,7 @@ export default function Layout() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: theme.bg, color: theme.text }}>
+    <div className="min-h-screen flex flex-col bg-bg text-text">
       <header
         className="sticky top-0 z-40 backdrop-blur-md"
         style={{
@@ -56,7 +56,7 @@ export default function Layout() {
           borderBottom: `1px solid ${theme.border}`,
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5" style={{ textDecoration: 'none' }}>
             <LogoMark size={28} />
@@ -71,11 +71,8 @@ export default function Layout() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-                style={({ isActive }) =>
-                  isActive
-                    ? { background: `${theme.accent}22`, color: theme.accent }
-                    : { color: theme.text2 }
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? 'bg-accent/10 text-accent' : 'text-text2'}`
                 }
               >
                 {item.icon}
@@ -98,7 +95,7 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="flex-1">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />
       </main>
 

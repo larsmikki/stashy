@@ -1,7 +1,7 @@
-import { toast } from 'sonner';
 import { thumbnailUrl, toggleFavorite } from '@/api/client';
 import { getErrorMessage } from '@/utils/errors';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useToast } from '@/components/ui';
 import type { MediaFile } from '@/types';
 
 interface Props {
@@ -24,6 +24,7 @@ export default function ThumbnailCard({
   onToggleSelect,
 }: Props) {
   const { theme } = useTheme();
+  const { addToast } = useToast();
   const sizeClass = size === 'sm' ? 'w-44 h-44' : 'w-full aspect-square';
   const isFavorite = !!media.is_favorite;
 
@@ -33,7 +34,7 @@ export default function ThumbnailCard({
       const updated = await toggleFavorite(media.id);
       onFavoriteToggle?.(updated);
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Could not update favorite'));
+      addToast(getErrorMessage(err, 'Could not update favorite'), 'error');
     }
   };
 
@@ -55,12 +56,7 @@ export default function ThumbnailCard({
   return (
     <button
       onClick={handleCardClick}
-      className={`${sizeClass} relative group overflow-hidden rounded-xl flex-shrink-0 cursor-pointer focus:outline-none card-hover`}
-      style={{
-        background: theme.surface2,
-        outline: selected ? `3px solid ${theme.accent}` : undefined,
-        outlineOffset: selected ? -3 : undefined,
-      }}
+      className={`${sizeClass} relative group overflow-hidden rounded-xl flex-shrink-0 cursor-pointer focus:outline-none card-hover bg-surface2 ${selected ? 'outline-3 outline-accent' : ''}`}
     >
       <img
         src={thumbnailUrl(media.id)}
@@ -105,11 +101,12 @@ export default function ThumbnailCard({
       <button
         onClick={handleFavorite}
         aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-        className={`absolute top-1.5 right-1.5 z-10 p-1 rounded-full transition-all
+        className={`absolute top-1.5 right-1.5 z-10 p-1 rounded-full transition-opacity
           ${isFavorite
-            ? 'opacity-100 bg-black/40 text-yellow-400'
-            : 'opacity-0 group-hover:opacity-100 bg-black/40 text-white/80 hover:text-yellow-400'
+            ? 'opacity-100 bg-black/40'
+            : 'opacity-0 group-hover:opacity-100 bg-black/40 text-white/80 hover:opacity-90'
           }`}
+        style={isFavorite ? { color: theme.accent } : undefined}
       >
         <svg className="w-4 h-4" fill={isFavorite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />

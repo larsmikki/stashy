@@ -14,7 +14,6 @@ router.get('/:albumId/media', (req: Request, res: Response) => {
     const sortParam = req.query.sort;
     const sort = sortParam === 'name' ? 'name'
       : sortParam === 'random' ? 'random'
-      : sortParam === 'date_taken' ? 'date_taken'
       : 'date';
     const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
     const page = Math.max(1, Number(req.query.page) || 1);
@@ -24,15 +23,11 @@ router.get('/:albumId/media', (req: Request, res: Response) => {
     );
     const offset = (page - 1) * limit;
 
-    // For date_taken, prefer EXIF date but fall back to filesystem created_at
-    // so files without EXIF still sort sensibly.
     const orderClause = sort === 'random'
       ? 'RANDOM()'
-      : sort === 'date_taken'
-        ? `COALESCE(mm.date_taken, m.created_at) ${order}`
-        : sort === 'name'
-          ? `m.filename ${order}`
-          : `m.created_at ${order}`;
+      : sort === 'name'
+        ? `m.filename ${order}`
+        : `m.created_at ${order}`;
 
     const countResult = db.exec(
       `SELECT COUNT(*) FROM media_files WHERE album_id = $id`,
@@ -43,7 +38,6 @@ router.get('/:albumId/media', (req: Request, res: Response) => {
     const result = db.exec(
       `SELECT ${MEDIA_COLUMNS.split(', ').map(c => `m.${c}`).join(', ')}
        FROM media_files m
-       LEFT JOIN media_metadata mm ON mm.media_id = m.id
        WHERE m.album_id = $id
        ORDER BY ${orderClause}
        LIMIT $limit OFFSET $offset`,

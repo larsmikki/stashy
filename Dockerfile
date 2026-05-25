@@ -13,6 +13,7 @@ RUN npm ci
 COPY tsconfig.base.json ./
 COPY server/ server/
 COPY client/ client/
+COPY shared/ shared/
 
 RUN npm run build -w client
 RUN npm run build -w server
@@ -46,7 +47,7 @@ ENV CACHE_DIR=/app/cache
 
 EXPOSE 3010
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=5m --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3010/api/health || exit 1
 
 CMD ["node", "server/dist/index.js"]

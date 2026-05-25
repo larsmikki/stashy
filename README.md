@@ -22,11 +22,17 @@ A self-hosted personal media gallery for browsing images and videos over LAN.
 - **Dark mode** — System-aware with manual toggle
 - **Optional password protection** — Session-based auth for shared networks
 
-## Docker (recommended)
+## Getting started
 
-### Quick start
+Pick whichever install path matches your setup. All paths land on [http://localhost:3010](http://localhost:3010).
 
-**1. Edit `docker-compose.yml` to mount your media**
+> **Non-Docker installs** need `ffmpeg` on `PATH` (video thumbnails + HLS transcoding). MP4/WebM stream directly without it, but you'll want it for MOV/MKV/AVI/M4V.
+
+### 1. Docker (Docker Desktop, NAS, or any Docker server)
+
+Works on Synology, Unraid, TrueNAS, QNAP, Proxmox, or a plain Docker host. FFmpeg is bundled in the image.
+
+**Docker Compose (recommended)** — edit to mount your media:
 
 ```yaml
 services:
@@ -57,23 +63,56 @@ volumes:
   - /home/user/screenshots:/media/screenshots:ro
 ```
 
-**2. Start**
+Then `docker compose up -d`. Open **http://localhost:3010**, go to **Settings → Add album**, and pick a folder (e.g. `/media/photos`).
 
-```bash
-docker compose up -d
+To update: `docker compose down && docker pull larsmikki/stashy:latest && docker compose up -d`.
+
+### 2. Local install on Windows
+
+```powershell
+scoop install nodejs-lts git ffmpeg
+git clone https://github.com/larsmikki/stashy.git
+cd stashy
+npm install
+npm run dev
 ```
 
-Open **http://localhost:3010**, go to **Settings → Add album**, and pick a folder (e.g. `/media/photos`).
+Server at http://localhost:3010, Vite dev client at http://localhost:5173. For a production build:
 
-### Updating
-
-```bash
-docker compose down
-docker pull larsmikki/stashy:latest
-docker compose up -d
+```powershell
+npm run build
+npm start
 ```
 
-Data and cache are in named volumes and survive rebuilds.
+### 3. Local install on macOS
+
+```bash
+brew install node git ffmpeg
+git clone https://github.com/larsmikki/stashy.git
+cd stashy
+npm install
+npm run dev
+```
+
+For a production build: `npm run build && npm start`.
+
+### 4. Local install on Linux
+
+Debian/Ubuntu:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs git ffmpeg
+
+git clone https://github.com/larsmikki/stashy.git
+cd stashy
+npm install
+npm run dev
+```
+
+On Fedora/RHEL use `dnf install nodejs git ffmpeg`; on Arch use `pacman -S nodejs npm git ffmpeg`.
+
+For a production build: `npm run build && npm start`.
 
 ### Environment variables
 
@@ -83,49 +122,11 @@ Data and cache are in named volumes and survive rebuilds.
 | `DATA_DIR` | `/app/data`  | SQLite database directory          |
 | `CACHE_DIR`| `/app/cache` | Thumbnail and transcode cache      |
 
-### FFmpeg
-
-FFmpeg is included in the Docker image (`ffmpeg` Alpine package). It is used for:
-- Extracting video thumbnail frames
-- Transcoding unsupported formats (MOV, MKV, AVI, M4V) to HLS on-demand
-
-MP4 and WebM stream directly without transcoding.
-
 ## Supported formats
 
 **Images:** JPG, JPEG, PNG, GIF, WebP, BMP, TIFF
 
 **Videos:** MP4, WebM, MOV, MKV, AVI, M4V
-
-## Development
-
-### Prerequisites
-
-- Node.js 20+
-- FFmpeg on PATH (for video thumbnails and transcoding)
-
-### Setup
-
-```bash
-npm install
-npm run dev
-```
-
-- **Server** at http://localhost:3010
-- **Client** at http://localhost:5173 (proxies `/api` to the server)
-
-### Build
-
-```bash
-npm run build   # compiles client then server
-npm start       # serves everything from :3010
-```
-
-### Tests
-
-```bash
-npm test -w server
-```
 
 ## Security
 

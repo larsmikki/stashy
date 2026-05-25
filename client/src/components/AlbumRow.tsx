@@ -1,15 +1,14 @@
 import { Link } from 'react-router-dom';
 import ThumbnailCard from '@/components/ThumbnailCard';
-import { useTheme } from '@/contexts/ThemeContext';
 import type { HomeAlbum, MediaFile } from '@/types';
 
 interface Props {
   album: HomeAlbum;
   onMediaClick: (media: MediaFile, allMedia: MediaFile[]) => void;
+  onFavoriteToggle?: (updated: MediaFile) => void;
 }
 
-export default function AlbumRow({ album, onMediaClick }: Props) {
-  const { theme } = useTheme();
+export default function AlbumRow({ album, onMediaClick, onFavoriteToggle }: Props) {
   if (!album.media.length) return null;
 
   const href = album.is_favorites ? '/favorites' : `/albums/${album.id}`;
@@ -19,8 +18,7 @@ export default function AlbumRow({ album, onMediaClick }: Props) {
       <div className="flex items-center justify-between mb-3">
         <Link
           to={href}
-          className="text-lg font-semibold flex items-center gap-2 transition-opacity hover:opacity-80"
-          style={{ color: theme.text }}
+          className="text-lg font-semibold flex items-center gap-2 transition-opacity hover:opacity-80 text-text"
         >
           {album.is_favorites && (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#f59e0b">
@@ -31,8 +29,7 @@ export default function AlbumRow({ album, onMediaClick }: Props) {
         </Link>
         <Link
           to={href}
-          className="text-sm font-medium transition-opacity hover:opacity-80"
-          style={{ color: theme.accent }}
+          className="text-sm font-medium transition-opacity hover:opacity-80 text-accent"
         >
           View all
         </Link>
@@ -44,6 +41,7 @@ export default function AlbumRow({ album, onMediaClick }: Props) {
             media={media}
             size="sm"
             onClick={() => onMediaClick(media, album.media)}
+            onFavoriteToggle={onFavoriteToggle}
           />
         ))}
       </div>

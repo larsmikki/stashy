@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { scanAlbum, getScanStatus } from '@/api/client';
 import { SCAN_POLL_INTERVAL_MS } from '@/constants';
+import { Button } from '@/components/ui';
 
 interface Props {
   albumId: number;
@@ -41,33 +42,16 @@ export default function ScanButton({ albumId, onComplete, size = 'md' }: Props) 
     };
   }, []);
 
-  const sizeClass = size === 'sm' ? 'settings-action-btn settings-action-btn-green' : '';
-  const mdStyle = size === 'md' ? {
-    padding: '6px 12px',
-    fontSize: '13px',
-    borderRadius: '8px',
-    background: '#dcfce7',
-    color: '#16a34a',
-    border: 'none',
-    cursor: scanning ? 'not-allowed' : 'pointer',
-    opacity: scanning ? 0.6 : 1,
-    display: 'inline-flex' as const,
-    alignItems: 'center',
-    gap: '6px',
-    fontFamily: 'inherit',
-    fontWeight: 500,
-  } : undefined;
-
   return (
-    <button
+    <Button
+      size={size}
+      variant="secondary"
       onClick={startScan}
       disabled={scanning}
-      className={`${sizeClass} inline-flex items-center gap-1.5`}
-      style={mdStyle}
     >
       {scanning ? (
         <>
-          <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
@@ -76,6 +60,6 @@ export default function ScanButton({ albumId, onComplete, size = 'md' }: Props) 
       ) : (
         'Scan'
       )}
-    </button>
+    </Button>
   );
 }

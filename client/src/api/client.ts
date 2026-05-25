@@ -122,7 +122,6 @@ export const getMedia = (albumId: number, params: { sort?: string; order?: strin
 
 // Metadata
 export interface MediaMetadata {
-  date_taken: string | null;
   camera_make: string | null;
   camera_model: string | null;
   lens: string | null;

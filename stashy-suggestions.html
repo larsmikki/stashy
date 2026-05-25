@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stashy — red accent options</title>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface2: #e8eaed;
+    --border: rgba(0,0,0,0.09);
+    --text: #09090b;
+    --text2: #71717a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 40px 24px 80px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1100px; margin: 0 auto; }
+
+  .page-head { margin-bottom: 8px; }
+  .page-head h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .page-head p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+  /* hue reference bar */
+  .huebar {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 18px 22px; margin: 24px 0 36px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    align-items: center;
+  }
+  .huebar .ref { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .huebar .dot { width: 26px; height: 26px; border-radius: 8px; flex: 0 0 auto; }
+  .huebar .ref b { font-weight: 700; }
+  .huebar .ref span { color: var(--text2); }
+  .huebar .sep { color: var(--border); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  /* one option card = a mini Stashy app */
+  .opt {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex; flex-direction: column;
+  }
+  .opt.recommended { box-shadow: 0 0 0 2px var(--accent), 0 8px 28px rgba(0,0,0,0.10); }
+
+  /* mock app header */
+  .mock-header {
+    height: 56px; display: flex; align-items: center; gap: 10px;
+    padding: 0 16px; border-bottom: 1px solid var(--border);
+    background: #ffffffdd; backdrop-filter: blur(8px);
+  }
+  .logo-icon { width: 28px; height: 28px; border-radius: 8px; position: relative; overflow: hidden; }
+  .logo-icon .shine {
+    position: absolute; inset: 0 0 50% 0;
+    background: linear-gradient(white 0, transparent 100%); opacity: 0.22;
+  }
+  .logo-word { font-size: 18px; font-weight: 800; letter-spacing: -0.02em;
+    background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .nav { margin-left: auto; display: flex; gap: 6px; }
+  .nav a { font-size: 12px; font-weight: 500; padding: 6px 10px; border-radius: 8px; color: var(--text2); text-decoration: none; }
+  .nav a.active { color: var(--accent); background: var(--accent-15); }
+
+  .mock-body { padding: 18px 16px 20px; }
+  .recommend-tag {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent); background: var(--accent-15);
+    border-radius: 999px; padding: 3px 9px; margin-bottom: 12px;
+  }
+  .opt h2 { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+  .hexline { font-size: 12px; color: var(--text2); margin-top: 2px; font-feature-settings: 'tnum'; }
+  .hexline code { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; color: var(--text); }
+
+  /* thumbnail grid mock */
+  .thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
+  .thumbs .t { aspect-ratio: 1; border-radius: 10px; background: var(--surface2); position: relative; }
+  .thumbs .t.fav::after {
+    content: '♥'; position: absolute; top: 5px; right: 6px; font-size: 13px; color: var(--accent);
+  }
+  .thumbs .t.sel { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .btn { font-size: 13px; font-weight: 600; border-radius: 8px; padding: 8px 14px; border: none; cursor: default; }
+  .btn-primary { background: var(--gradient); color: #fff; box-shadow: 0 4px 14px var(--accent-30); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+    color: var(--accent); background: var(--accent-15); border: 1px solid var(--accent-30); }
+
+  /* toggle + link accents */
+  .row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); margin-top: 10px; }
+  .toggle { width: 38px; height: 21px; border-radius: 12px; background: var(--accent); position: relative; flex: 0 0 auto; }
+  .toggle::after { content:''; position:absolute; top:2px; left:19px; width:17px; height:17px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  a.link { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+  /* dark-mode mini strip */
+  .darkstrip {
+    margin-top: 14px; border-radius: 12px; padding: 12px 14px;
+    background: #0a0a0f; border: 1px solid var(--accent-dark-border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .darkstrip .dword { font-size: 14px; font-weight: 800; background: var(--gradient-dark);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .darkstrip .dbtn { margin-left: auto; font-size: 11px; font-weight: 600; color:#fff;
+    background: var(--gradient-dark); padding: 5px 11px; border-radius: 7px; }
+  .darkstrip .dlabel { font-size: 10px; color: #8884a8; }
+
+  .swatches { display: flex; gap: 6px; margin-top: 14px; }
+  .swatches .sw { flex: 1; height: 30px; border-radius: 7px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:2px; }
+  .swatches .sw span { font-size: 8px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.4); font-family: ui-monospace, monospace; }
+
+  .note { font-size: 11px; color: var(--text2); margin-top: 12px; line-height: 1.45; }
+  .note.warn { color: #b45309; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <h1>Stashy — red accent options</h1>
+    <p>Each card is a mini Stashy mockup using that accent. Current Stashy &amp; Reely both use rose <code>#e11d48</code>; these move Stashy to a true red.</p>
+  </div>
+
+  <div class="huebar">
+    <div class="ref"><div class="dot" style="background:#e11d48"></div><div><b>Reely / current Stashy</b><br><span>#e11d48 · rose · hue 347°</span></div></div>
+    <div class="sep">|</div>
+    <div class="ref"><div class="dot" style="background:#dc2626"></div><div><b>Fleet danger token</b><br><span>#dc2626 · pure red · hue 0°</span></div></div>
+    <div class="sep">|</div>
+    <div class="ref"><div class="dot" style="background:#ea580c"></div><div><b>Remindy</b><br><span>#ea580c · orange · hue 20°</span></div></div>
+  </div>
+
+  <div class="grid">
+
+    <!-- OPTION 1: SCARLET -->
+    <div class="opt recommended" style="--accent:#e0331c; --accent-15:#e0331c26; --accent-30:#e0331c4d;
+        --gradient:linear-gradient(135deg,#fb6a4a 0%,#b91c1c 100%);
+        --gradient-dark:linear-gradient(135deg,#fb6a4a 0%,#e0331c 100%);
+        --accent-dark-border:rgba(224,51,28,0.18);">
+      <div class="mock-header">
+        <div class="logo-icon" style="background:linear-gradient(135deg,#fb6a4a,#b91c1c)"><div class="shine"></div></div>
+        <div class="logo-word">Stashy</div>
+        <div class="nav"><a class="active">Gallery</a><a>Albums</a><a>Favorites</a></div>
+      </div>
+      <div class="mock-body">
+        <span class="recommend-tag">Recommended</span>
+        <h2>Scarlet — warm red</h2>
+        <div class="hexline">accent <code>#e0331c</code> · hue ~8° · gradient <code>#fb6a4a → #b91c1c</code></div>
+        <div class="thumbs">
+          <div class="t"></div><div class="t fav"></div><div class="t sel"></div>
+          <div class="t"></div><div class="t"></div><div class="t fav"></div>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary">Upload</button>
+          <button class="btn btn-secondary">Scan</button>
+          <span class="pill">128 photos</span>
+        </div>
+        <div class="row"><div class="toggle"></div> Show filenames · <a class="link">View album</a></div>
+        <div class="darkstrip">
+          <div class="dword">Stashy</div><span class="dlabel">dark mode</span>
+          <div class="dbtn">Upload</div>
+        </div>
+        <div class="swatches">
+          <div class="sw" style="background:#fb6a4a"><span>fb6a4a</span></div>
+          <div class="sw" style="background:#e0331c"><span>e0331c</span></div>
+          <div class="sw" style="background:#b91c1c"><span>b91c1c</span></div>
+        </div>
+        <p class="note">Leans toward fire/orange — maximally distinct from Reely's pink rose and offset from the danger-red token. No trace of pink.</p>
+      </div>
+    </div>
+
+    <!-- OPTION 2: CRIMSON -->
+    <div class="opt" style="--accent:#dc2626; --accent-15:#dc262626; --accent-30:#dc26264d;
+        --gradient:linear-gradient(135deg,#f87171 0%,#b91c1c 100%);
+        --gradient-dark:linear-gradient(135deg,#f87171 0%,#dc2626 100%);
+        --accent-dark-border:rgba(220,38,38,0.18);">
+      <div class="mock-header">
+        <div class="logo-icon" style="background:linear-gradient(135deg,#f87171,#b91c1c)"><div class="shine"></div></div>
+        <div class="logo-word">Stashy</div>
+        <div class="nav"><a class="active">Gallery</a><a>Albums</a><a>Favorites</a></div>
+      </div>
+      <div class="mock-body">
+        <h2>Crimson — pure red</h2>
+        <div class="hexline">accent <code>#dc2626</code> · hue 0° · gradient <code>#f87171 → #b91c1c</code></div>
+        <div class="thumbs">
+          <div class="t"></div><div class="t fav"></div><div class="t sel"></div>
+          <div class="t"></div><div class="t"></div><div class="t fav"></div>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary">Upload</button>
+          <button class="btn btn-secondary">Scan</button>
+          <span class="pill">128 photos</span>
+        </div>
+        <div class="row"><div class="toggle"></div> Show filenames · <a class="link">View album</a></div>
+        <div class="darkstrip">
+          <div class="dword">Stashy</div><span class="dlabel">dark mode</span>
+          <div class="dbtn">Upload</div>
+        </div>
+        <div class="swatches">
+          <div class="sw" style="background:#f87171"><span>f87171</span></div>
+          <div class="sw" style="background:#dc2626"><span>dc2626</span></div>
+          <div class="sw" style="background:#b91c1c"><span>b91c1c</span></div>
+        </div>
+        <p class="note warn">⚠ Identical to the fleet's danger/error color — brand buttons and error states would look the same.</p>
+      </div>
+    </div>
+
+    <!-- OPTION 3: DEEP RED -->
+    <div class="opt" style="--accent:#b3201f; --accent-15:#b3201f26; --accent-30:#b3201f4d;
+        --gradient:linear-gradient(135deg,#ef4444 0%,#991b1b 100%);
+        --gradient-dark:linear-gradient(135deg,#ef4444 0%,#b3201f 100%);
+        --accent-dark-border:rgba(179,32,31,0.18);">
+      <div class="mock-header">
+        <div class="logo-icon" style="background:linear-gradient(135deg,#ef4444,#991b1b)"><div class="shine"></div></div>
+        <div class="logo-word">Stashy</div>
+        <div class="nav"><a class="active">Gallery</a><a>Albums</a><a>Favorites</a></div>
+      </div>
+      <div class="mock-body">
+        <h2>Deep red — cherry-cola</h2>
+        <div class="hexline">accent <code>#b3201f</code> · hue ~0–2° · gradient <code>#ef4444 → #991b1b</code></div>
+        <div class="thumbs">
+          <div class="t"></div><div class="t fav"></div><div class="t sel"></div>
+          <div class="t"></div><div class="t"></div><div class="t fav"></div>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary">Upload</button>
+          <button class="btn btn-secondary">Scan</button>
+          <span class="pill">128 photos</span>
+        </div>
+        <div class="row"><div class="toggle"></div> Show filenames · <a class="link">View album</a></div>
+        <div class="darkstrip">
+          <div class="dword">Stashy</div><span class="dlabel">dark mode</span>
+          <div class="dbtn">Upload</div>
+        </div>
+        <div class="swatches">
+          <div class="sw" style="background:#ef4444"><span>ef4444</span></div>
+          <div class="sw" style="background:#b3201f"><span>b3201f</span></div>
+          <div class="sw" style="background:#991b1b"><span>991b1b</span></div>
+        </div>
+        <p class="note">Darker, more serious "oxblood" red. Clearly red, slightly muted. Bright <code>#ef4444</code> top stop keeps the gradient lively.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

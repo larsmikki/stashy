@@ -2,7 +2,6 @@ import exifr from 'exifr';
 import { getDb } from '../db/connection.js';
 
 export interface ExtractedMetadata {
-  date_taken: string | null;
   camera_make: string | null;
   camera_model: string | null;
   lens: string | null;
@@ -15,16 +14,6 @@ export interface ExtractedMetadata {
   exposure_time: number | null;
   gps_lat: number | null;
   gps_lon: number | null;
-}
-
-function toIso(d: unknown): string | null {
-  if (!d) return null;
-  if (d instanceof Date && !isNaN(d.getTime())) return d.toISOString();
-  if (typeof d === 'string') {
-    const parsed = new Date(d);
-    return isNaN(parsed.getTime()) ? null : parsed.toISOString();
-  }
-  return null;
 }
 
 function toNum(v: unknown): number | null {
@@ -44,7 +33,6 @@ export async function extractImageMetadata(filePath: string): Promise<ExtractedM
   let exif: Record<string, unknown> | undefined;
   try {
     exif = await exifr.parse(filePath, [
-      'DateTimeOriginal', 'CreateDate', 'ModifyDate',
       'Make', 'Model', 'LensModel', 'LensMake',
       'ExifImageWidth', 'ExifImageHeight', 'ImageWidth', 'ImageHeight',
       'Orientation', 'ISO', 'FocalLength', 'FNumber', 'ExposureTime',
@@ -55,9 +43,7 @@ export async function extractImageMetadata(filePath: string): Promise<ExtractedM
   }
   if (!exif) return null;
 
-  const dateTaken = toIso(exif.DateTimeOriginal) ?? toIso(exif.CreateDate) ?? toIso(exif.ModifyDate);
   return {
-    date_taken: dateTaken,
     camera_make: toStr(exif.Make),
     camera_model: toStr(exif.Model),
     lens: toStr(exif.LensModel) ?? toStr(exif.LensMake),
@@ -78,12 +64,11 @@ export function upsertMetadata(mediaId: number, meta: ExtractedMetadata): void {
   db.raw
     .prepare(
       `INSERT INTO media_metadata
-         (media_id, date_taken, camera_make, camera_model, lens, width, height,
+         (media_id, camera_make, camera_model, lens, width, height,
           orientation, iso, focal_length, f_number, exposure_time, gps_lat, gps_lon)
-       VALUES (@mediaId, @dateTaken, @cameraMake, @cameraModel, @lens, @width, @height,
+       VALUES (@mediaId, @cameraMake, @cameraModel, @lens, @width, @height,
                @orientation, @iso, @focalLength, @fNumber, @exposureTime, @gpsLat, @gpsLon)
        ON CONFLICT(media_id) DO UPDATE SET
-         date_taken = excluded.date_taken,
          camera_make = excluded.camera_make,
          camera_model = excluded.camera_model,
          lens = excluded.lens,
@@ -99,7 +84,6 @@ export function upsertMetadata(mediaId: number, meta: ExtractedMetadata): void {
     )
     .run({
       mediaId,
-      dateTaken: meta.date_taken,
       cameraMake: meta.camera_make,
       cameraModel: meta.camera_model,
       lens: meta.lens,
@@ -118,7 +102,7 @@ export function upsertMetadata(mediaId: number, meta: ExtractedMetadata): void {
 export function getMetadata(mediaId: number): ExtractedMetadata | null {
   const db = getDb();
   const result = db.exec(
-    `SELECT date_taken, camera_make, camera_model, lens, width, height,
+    `SELECT camera_make, camera_model, lens, width, height,
             orientation, iso, focal_length, f_number, exposure_time, gps_lat, gps_lon
      FROM media_metadata WHERE media_id = $id`,
     { $id: mediaId },
@@ -126,18 +110,17 @@ export function getMetadata(mediaId: number): ExtractedMetadata | null {
   if (!result.length || !result[0].values.length) return null;
   const r = result[0].values[0];
   return {
-    date_taken: (r[0] as string | null) ?? null,
-    camera_make: (r[1] as string | null) ?? null,
-    camera_model: (r[2] as string | null) ?? null,
-    lens: (r[3] as string | null) ?? null,
-    width: (r[4] as number | null) ?? null,
-    height: (r[5] as number | null) ?? null,
-    orientation: (r[6] as number | null) ?? null,
-    iso: (r[7] as number | null) ?? null,
-    focal_length: (r[8] as number | null) ?? null,
-    f_number: (r[9] as number | null) ?? null,
-    exposure_time: (r[10] as number | null) ?? null,
-    gps_lat: (r[11] as number | null) ?? null,
-    gps_lon: (r[12] as number | null) ?? null,
+    camera_make: (r[0] as string | null) ?? null,
+    camera_model: (r[1] as string | null) ?? null,
+    lens: (r[2] as string | null) ?? null,
+    width: (r[3] as number | null) ?? null,
+    height: (r[4] as number | null) ?? null,
+    orientation: (r[5] as number | null) ?? null,
+    iso: (r[6] as number | null) ?? null,
+    focal_length: (r[7] as number | null) ?? null,
+    f_number: (r[8] as number | null) ?? null,
+    exposure_time: (r[9] as number | null) ?? null,
+    gps_lat: (r[10] as number | null) ?? null,
+    gps_lon: (r[11] as number | null) ?? null,
   };
 }

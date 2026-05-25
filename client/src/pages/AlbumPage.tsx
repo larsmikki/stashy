@@ -9,13 +9,14 @@ import MediaViewer from '@/components/MediaViewer';
 import SlideshowMode from '@/components/SlideshowMode';
 import SortControls from '@/components/SortControls';
 import SelectionBar from '@/components/SelectionBar';
-import { useTheme } from '@/contexts/ThemeContext';
+
 import type { Album, MediaFile } from '@/types';
+import { Button } from '@/components/ui';
 
 export default function AlbumPage() {
   const { id } = useParams<{ id: string }>();
   const albumId = Number(id);
-  const { theme } = useTheme();
+  
   const [album, setAlbum] = useState<Album | null>(null);
   const [sort, setSort] = useState('date');
   const [order, setOrder] = useState('desc');
@@ -68,34 +69,19 @@ export default function AlbumPage() {
     if (viewerMedia?.id === updated.id) setViewerMedia(updated);
   };
 
-  const controlStyle = {
-    padding: '6px 12px',
-    fontSize: '13px',
-    border: `1px solid ${theme.border}`,
-    borderRadius: '8px',
-    background: theme.surface,
-    color: theme.text,
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-  };
-
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: theme.text }}>{album?.name || 'Album'}</h1>
-          <span className="text-sm" style={{ color: theme.text2 }}>{total} items</span>
+          <h1 className="text-2xl font-extrabold tracking-tight text-text">{album?.name || 'Album'}</h1>
+          <span className="text-sm text-text2">{total} items</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <SortControls sort={sort} order={order} onSortChange={setSort} onOrderChange={setOrder} />
           {items.some(m => m.file_type === 'image') && (
-            <button
-              onClick={startSlideshow}
-              disabled={slideshowLoading}
-              style={{ ...controlStyle, background: theme.gradient, color: 'white', border: 'none', fontWeight: 600, opacity: slideshowLoading ? 0.7 : 1 }}
-            >
+            <Button size="sm" variant="primary" onClick={startSlideshow} disabled={slideshowLoading}>
               {slideshowLoading ? 'Loading…' : 'Slideshow'}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -136,6 +122,6 @@ export default function AlbumPage() {
       )}
 
       <SelectionBar ids={selection.ids} items={items} onClear={selection.clear} onMutate={mutate} />
-    </div>
+    </>
   );
 }

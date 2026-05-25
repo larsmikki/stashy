@@ -2,6 +2,8 @@ import { useEffect, useCallback, useState } from 'react';
 import { useSlideshow } from '@/hooks/useSlideshow';
 import { fullUrl, toggleFavorite } from '@/api/client';
 import { SLIDESHOW_MIN_DELAY_S, SLIDESHOW_MAX_DELAY_S } from '@/constants';
+import { Button } from '@/components/ui';
+import { useTheme } from '@/contexts/ThemeContext';
 import type { MediaFile } from '@/types';
 
 interface Props {
@@ -10,6 +12,7 @@ interface Props {
 }
 
 export default function SlideshowMode({ items, onClose }: Props) {
+  const { theme } = useTheme();
   const { currentItem, currentIndex, total, isPlaying, delay, setDelay, next, prev, togglePlay, isRandom, toggleRandom } =
     useSlideshow({ items });
 
@@ -71,7 +74,7 @@ export default function SlideshowMode({ items, onClose }: Props) {
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center text-white">
         <p>No images available for slideshow.</p>
-        <button onClick={onClose} className="ml-4 underline">Close</button>
+        <Button variant="primary" onClick={onClose} className="ml-4">Close</Button>
       </div>
     );
   }
@@ -120,7 +123,8 @@ export default function SlideshowMode({ items, onClose }: Props) {
         <button
           onClick={handleToggleFavorite}
           aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
-          className="text-white/80 hover:text-white p-2"
+          className="p-2 transition-opacity hover:opacity-90"
+          style={{ color: isFavorited ? theme.accent : 'rgb(255 255 255 / 0.8)' }}
           title="Favorite (F)"
         >
           <svg className="w-6 h-6" fill={isFavorited ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +153,8 @@ export default function SlideshowMode({ items, onClose }: Props) {
             step={0.5}
             value={delay}
             onChange={e => setDelay(Number(e.target.value))}
-            className="w-24 accent-white"
+            className="w-24"
+            style={{ accentColor: theme.accent }}
           />
           <span className="w-8">{delay}s</span>
         </div>

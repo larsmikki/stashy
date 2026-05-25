@@ -1,4 +1,4 @@
-import { useTheme } from '@/contexts/ThemeContext';
+import { Button } from '@/components/ui';
 
 interface Props {
   sort: string;
@@ -7,42 +7,44 @@ interface Props {
   onOrderChange: (order: string) => void;
 }
 
-function Btn({ active, onClick, children, theme }: { active: boolean; onClick: () => void; children: React.ReactNode; theme: ReturnType<typeof useTheme>['theme'] }) {
-  return (
-    <button
-      onClick={onClick}
-      className="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
-      style={
-        active
-          ? { background: `${theme.accent}15`, color: theme.accent, border: `1px solid ${theme.accent}` }
-          : { background: theme.surface, color: theme.text2, border: `1px solid ${theme.border}` }
-      }
-    >
-      {children}
-    </button>
-  );
-}
-
 export default function SortControls({ sort, order, onSortChange, onOrderChange }: Props) {
-  const { theme } = useTheme();
   const isRandom = sort === 'random';
+  const sortOptions = [
+    { value: 'date', label: 'Date' },
+    { value: 'name', label: 'Name' },
+    { value: 'random', label: 'Random' },
+  ];
+  const orderOptions = [
+    { value: 'desc', label: sort === 'date' ? 'Newest' : 'Z-A' },
+    { value: 'asc', label: sort === 'date' ? 'Oldest' : 'A-Z' },
+  ];
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex gap-1">
-        <Btn active={sort === 'date'} onClick={() => onSortChange('date')} theme={theme}>Date</Btn>
-        <Btn active={sort === 'date_taken'} onClick={() => onSortChange('date_taken')} theme={theme}>Taken</Btn>
-        <Btn active={sort === 'name'} onClick={() => onSortChange('name')} theme={theme}>Name</Btn>
-        <Btn active={isRandom} onClick={() => onSortChange('random')} theme={theme}>Random</Btn>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap gap-1.5">
+        {sortOptions.map(option => (
+          <Button
+            key={option.value}
+            size="sm"
+            variant={sort === option.value ? 'primary' : 'secondary'}
+            onClick={() => onSortChange(option.value)}
+          >
+            {option.label}
+          </Button>
+        ))}
       </div>
       {!isRandom && (
-        <div className="flex gap-1">
-          <Btn active={order === 'desc'} onClick={() => onOrderChange('desc')} theme={theme}>
-            {sort === 'date' || sort === 'date_taken' ? 'Newest' : 'Z-A'}
-          </Btn>
-          <Btn active={order === 'asc'} onClick={() => onOrderChange('asc')} theme={theme}>
-            {sort === 'date' || sort === 'date_taken' ? 'Oldest' : 'A-Z'}
-          </Btn>
+        <div className="flex flex-wrap gap-1.5">
+          {orderOptions.map(option => (
+            <Button
+              key={option.value}
+              size="sm"
+              variant={order === option.value ? 'primary' : 'secondary'}
+              onClick={() => onOrderChange(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
         </div>
       )}
     </div>

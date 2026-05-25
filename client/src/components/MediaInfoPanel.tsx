@@ -80,7 +80,6 @@ export default function MediaInfoPanel({ media, onClose }: Props) {
             <p className="text-sm text-white/50">No EXIF data.</p>
           ) : (
             <>
-              {row('Taken', meta.date_taken ? new Date(meta.date_taken).toLocaleString() : '—')}
               {row('Dimensions', meta.width && meta.height ? `${meta.width} × ${meta.height}` : '—')}
               {row('Camera', [meta.camera_make, meta.camera_model].filter(Boolean).join(' ') || '—')}
               {row('Lens', meta.lens ?? '—')}
