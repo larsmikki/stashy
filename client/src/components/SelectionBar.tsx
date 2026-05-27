@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { bulkFavorite, bulkDownloadUrl } from '@/api/client';
+import { bulkFavorite, bulkDownloadUrl } from '@/api';
 import { getErrorMessage } from '@/utils/errors';
 import { useToast, Button, Surface } from '@/components/ui';
 import type { MediaFile } from '@/types';

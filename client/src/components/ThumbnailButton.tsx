@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { generateThumbnails, getThumbnailStatus } from '@/api/client';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { generateThumbnails, getThumbnailStatus } from '@/api';
 import { SCAN_POLL_INTERVAL_MS } from '@/constants';
 import type { ThumbnailStatus } from '@/types';
 import { Button } from '@/components/ui';
@@ -14,21 +14,7 @@ export default function ThumbnailButton({ albumId, size = 'sm' }: Props) {
   const [generating, setGenerating] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    getThumbnailStatus(albumId).then(s => {
-      setStatus(s);
-      if (s.generating) {
-        setGenerating(true);
-        startPolling();
-      }
-    }).catch(() => {});
-
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [albumId]);
-
-  const startPolling = () => {
+  const startPolling = useCallback(() => {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(async () => {
       try {
@@ -43,7 +29,21 @@ export default function ThumbnailButton({ albumId, size = 'sm' }: Props) {
         if (pollRef.current) clearInterval(pollRef.current);
       }
     }, SCAN_POLL_INTERVAL_MS);
-  };
+  }, [albumId]);
+
+  useEffect(() => {
+    getThumbnailStatus(albumId).then(s => {
+      setStatus(s);
+      if (s.generating) {
+        setGenerating(true);
+        startPolling();
+      }
+    }).catch(() => {});
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [albumId, startPolling]);
 
   const handleGenerate = async () => {
     try {

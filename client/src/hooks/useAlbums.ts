@@ -1,27 +1,24 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getAlbums } from '@/api/client';
+import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getAlbums } from '@/api';
 import { getErrorMessage } from '@/utils/errors';
-import type { Album } from '@/types';
+import { queryKeys } from '@/queryKeys';
 
 export function useAlbums() {
-  const [albums, setAlbums] = useState<Album[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { data: albums = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.albums,
+    queryFn: getAlbums,
+  });
 
   const refresh = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getAlbums();
-      setAlbums(data);
-      setError(null);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to load albums'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    await queryClient.invalidateQueries({ queryKey: queryKeys.albums });
+  }, [queryClient]);
 
-  useEffect(() => { refresh(); }, [refresh]);
-
-  return { albums, loading, error, refresh };
+  return {
+    albums,
+    loading: isLoading,
+    error: error ? getErrorMessage(error, 'Failed to load albums') : null,
+    refresh,
+  };
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Hls from 'hls.js';
-import { streamUrl, transcodeUrl } from '@/api/client';
+import { streamUrl, transcodeUrl } from '@/api';
 import type { MediaFile } from '@/types';
 
 interface Props {

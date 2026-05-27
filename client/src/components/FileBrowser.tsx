@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { browsePath } from '@/api/client';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { browsePath } from '@/api';
 import { getErrorMessage } from '@/utils/errors';
-import type { BrowseResult } from '@/types';
 import { Button, Modal } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';
+import { queryKeys } from '@/queryKeys';
 
 interface Props {
   isOpen: boolean;
@@ -14,30 +15,25 @@ interface Props {
 
 export default function FileBrowser({ isOpen, onClose, onSelect, initialPath }: Props) {
   const { theme } = useTheme();
-  const [result, setResult] = useState<BrowseResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedPath, setSelectedPath] = useState<string | undefined>();
+  const browseTarget = selectedPath ?? initialPath;
+  const { data: result = null, isFetching: loading, error } = useQuery({
+    queryKey: queryKeys.browsePath(browseTarget),
+    queryFn: () => browsePath(browseTarget),
+    enabled: isOpen,
+  });
+  const errorMessage = error ? getErrorMessage(error, 'Failed to browse') : null;
 
-  const loadPath = async (path?: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await browsePath(path);
-      setResult(data);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to browse'));
-    } finally {
-      setLoading(false);
-    }
+  const loadPath = (path?: string) => {
+    setSelectedPath(path);
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      loadPath(initialPath);
-    }
-  }, [isOpen, initialPath]);
-
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    setSelectedPath(undefined);
+    onClose();
+  };
 
   const currentPath = result?.currentPath || '';
   const isWindows = /^[A-Z]:\\/i.test(currentPath);
@@ -46,7 +42,7 @@ export default function FileBrowser({ isOpen, onClose, onSelect, initialPath }: 
     : [];
 
   return (
-    <Modal title="Select folder" onClose={onClose} maxWidth={560}>
+    <Modal title="Select folder" onClose={handleClose} maxWidth={560}>
       <div className="max-h-[70vh] flex flex-col">
         {/* Breadcrumb */}
         <div
@@ -84,8 +80,8 @@ export default function FileBrowser({ isOpen, onClose, onSelect, initialPath }: 
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="p-8 text-center text-text2">Loading...</div>
-          ) : error ? (
-            <div className="p-4 text-sm text-danger">{error}</div>
+          ) : errorMessage ? (
+            <div className="p-4 text-sm text-danger">{errorMessage}</div>
           ) : result ? (
             <>
               {result.parent !== null && (
@@ -140,7 +136,11 @@ export default function FileBrowser({ isOpen, onClose, onSelect, initialPath }: 
             <Button
               size="sm"
               variant="primary"
-              onClick={() => result?.currentPath && onSelect(result.currentPath)}
+              onClick={() => {
+                if (!result?.currentPath) return;
+                setSelectedPath(undefined);
+                onSelect(result.currentPath);
+              }}
               disabled={!result?.currentPath}
             >
               Select

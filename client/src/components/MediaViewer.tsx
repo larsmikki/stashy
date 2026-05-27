@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState, type MouseEvent } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import VideoPlayer from '@/components/VideoPlayer';
 import MediaInfoPanel from '@/components/MediaInfoPanel';
-import { fullUrl, toggleFavorite } from '@/api/client';
+import { fullUrl, toggleFavorite } from '@/api';
 import { useSwipe } from '@/hooks/useSwipe';
 import { getErrorMessage } from '@/utils/errors';
 import { useToast } from '@/components/ui';

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import path from 'path';
-import { safePath, ensureWithin } from '../utils/paths.js';
+import { safePath, ensureWithin } from '../src/utils/paths.js';
 
 describe('safePath', () => {
   it('resolves a normal absolute path', () => {

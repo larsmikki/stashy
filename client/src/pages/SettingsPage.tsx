@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAlbums } from '@/hooks/useAlbums';
 import ThemePicker from '@/components/ThemePicker';
-import * as api from '@/api/client';
-import type { AppSettings } from '@/api/client';
+import * as api from '@/api';
+import type { AppSettings } from '@/api';
 import { getErrorMessage } from '@/utils/errors';
 import { SCAN_POLL_INTERVAL_MS } from '@/constants';
+import { queryKeys } from '@/queryKeys';
 import AlbumForm from '@/components/AlbumForm';
 import ScanButton from '@/components/ScanButton';
 import ThumbnailButton from '@/components/ThumbnailButton';
@@ -47,13 +49,13 @@ function StatusBadge({ status }: { status?: string }) {
 
 export default function SettingsPage() {
   const { theme } = useTheme();
+  const queryClient = useQueryClient();
   const { albums, loading, refresh } = useAlbums();
   const [showCreate, setShowCreate] = useState(false);
   const [editingAlbum, setEditingAlbum] = useState<Album | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanningAll, setScanningAll] = useState(false);
   const [generatingAll, setGeneratingAll] = useState(false);
-  const [settings, setSettings] = useState<AppSettings | null>(null);
   const scanAllIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const thumbAllIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -61,8 +63,50 @@ export default function SettingsPage() {
   const dragOverItem = useRef<number | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
+  const { data: settings = null } = useQuery({
+    queryKey: queryKeys.settings,
+    queryFn: api.getSettings,
+  });
+
+  const createAlbumMutation = useMutation({
+    mutationFn: ({ name, path }: { name: string; path: string }) => api.createAlbum(name, path),
+    onSuccess: () => {
+      void refresh();
+    },
+  });
+  const updateAlbumMutation = useMutation({
+    mutationFn: ({ id, name, path }: { id: number; name: string; path: string }) =>
+      api.updateAlbum(id, { name, path }),
+    onSuccess: () => {
+      void refresh();
+    },
+  });
+  const deleteAlbumMutation = useMutation({
+    mutationFn: api.deleteAlbum,
+    onSuccess: () => {
+      void refresh();
+    },
+  });
+  const reorderAlbumsMutation = useMutation({
+    mutationFn: api.reorderAlbums,
+    onSuccess: () => {
+      void refresh();
+    },
+  });
+  const updateSettingsMutation = useMutation({
+    mutationFn: api.updateSettings,
+    onSuccess: (_, data) => {
+      queryClient.setQueryData<AppSettings>(queryKeys.settings, (current) => {
+        if (!current) return current;
+        return { ...current, ...data };
+      });
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings });
+    },
+  });
+
   useEffect(() => {
-    api.getSettings().then(setSettings).catch(() => {});
     return () => {
       if (scanAllIntervalRef.current) clearInterval(scanAllIntervalRef.current);
       if (thumbAllIntervalRef.current) clearInterval(thumbAllIntervalRef.current);
@@ -93,7 +137,7 @@ export default function SettingsPage() {
           if (album.name && album.path) {
             const existing = albums.find(a => a.name === album.name || a.path === album.path);
             if (!existing) {
-              await api.createAlbum(album.name, album.path);
+              await createAlbumMutation.mutateAsync({ name: album.name, path: album.path });
               created++;
             }
           }
@@ -141,9 +185,8 @@ export default function SettingsPage() {
   const handleCreate = async (name: string, path: string) => {
     try {
       setError(null);
-      await api.createAlbum(name, path);
+      await createAlbumMutation.mutateAsync({ name, path });
       setShowCreate(false);
-      refresh();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to create album'));
     }
@@ -153,9 +196,8 @@ export default function SettingsPage() {
     if (!editingAlbum) return;
     try {
       setError(null);
-      await api.updateAlbum(editingAlbum.id, { name, path });
+      await updateAlbumMutation.mutateAsync({ id: editingAlbum.id, name, path });
       setEditingAlbum(null);
-      refresh();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to update album'));
     }
@@ -165,8 +207,7 @@ export default function SettingsPage() {
     if (!confirm(`Delete album "${album.name}"? This won't delete any media files.`)) return;
     try {
       setError(null);
-      await api.deleteAlbum(album.id);
-      refresh();
+      await deleteAlbumMutation.mutateAsync(album.id);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to delete album'));
     }
@@ -175,8 +216,7 @@ export default function SettingsPage() {
   const handleToggleFavoritesOnHome = async (enabled: boolean) => {
     try {
       setError(null);
-      await api.updateSettings({ favorites_on_home: enabled });
-      setSettings(s => s ? { ...s, favorites_on_home: enabled } : s);
+      await updateSettingsMutation.mutateAsync({ favorites_on_home: enabled });
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to update settings'));
     }
@@ -249,13 +289,10 @@ export default function SettingsPage() {
       const albumsInOrder = reordered.filter(item => !item.isFavorites);
       const favIdx = reordered.findIndex(item => item.isFavorites);
 
-      await api.reorderAlbums(albumsInOrder.map(a => a.id));
+      await reorderAlbumsMutation.mutateAsync(albumsInOrder.map(a => a.id));
       if (favIdx !== -1) {
-        await api.updateSettings({ favorites_sort_order: favIdx });
-        setSettings(s => s ? { ...s, favorites_sort_order: favIdx } : s);
+        await updateSettingsMutation.mutateAsync({ favorites_sort_order: favIdx });
       }
-
-      refresh();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to reorder'));
     }

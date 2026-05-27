@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseRange } from '../utils/stream.js';
+import { parseRange } from '../src/utils/stream.js';
 
 describe('parseRange', () => {
   const fileSize = 10000;

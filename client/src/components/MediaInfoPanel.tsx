@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { getMediaMetadata, type MediaMetadata } from '@/api/client';
+import { useQuery } from '@tanstack/react-query';
+import { getMediaMetadata, type MediaMetadata } from '@/api';
 import type { MediaFile } from '@/types';
+import { queryKeys } from '@/queryKeys';
 
 function fmt(n: number | null | undefined, digits = 1): string {
   if (n == null) return '—';
@@ -26,17 +27,10 @@ interface Props {
 }
 
 export default function MediaInfoPanel({ media, onClose }: Props) {
-  const [meta, setMeta] = useState<MediaMetadata | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    setMeta(null);
-    getMediaMetadata(media.id)
-      .then(setMeta)
-      .catch(() => setMeta(null))
-      .finally(() => setLoading(false));
-  }, [media.id]);
+  const { data: meta = null, isLoading: loading } = useQuery<MediaMetadata | null>({
+    queryKey: queryKeys.mediaMetadata(media.id),
+    queryFn: () => getMediaMetadata(media.id),
+  });
 
   const row = (label: string, value: React.ReactNode) => (
     <div className="flex justify-between gap-4 py-1.5 text-sm">

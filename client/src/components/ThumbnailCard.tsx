@@ -1,4 +1,4 @@
-import { thumbnailUrl, toggleFavorite } from '@/api/client';
+import { thumbnailUrl, toggleFavorite } from '@/api';
 import { getErrorMessage } from '@/utils/errors';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/components/ui';

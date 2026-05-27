@@ -11,13 +11,8 @@
   </defs>
   <rect width="180" height="180" rx="40" fill="url(#stashy-bg)"/>
   <rect width="180" height="100" rx="40" fill="url(#stashy-sh)"/>
-  <g transform="rotate(-10 90 90)">
-    <rect x="45" y="45" width="90" height="90" rx="8" fill="white" opacity="0.55"/>
-  </g>
-  <g transform="rotate(8 90 90)">
-    <rect x="45" y="45" width="90" height="90" rx="8" fill="white" opacity="0.95"/>
-    <rect x="52.5" y="52.5" width="75" height="57.5" rx="3" fill="url(#stashy-bg)" opacity="0.85"/>
-    <circle cx="72.5" cy="72.5" r="7" fill="white" opacity="0.9"/>
-    <path d="M57.5 105 L75 85 L95 97.5 L122.5 70 L122.5 110 L57.5 110 Z" fill="white" opacity="0.55"/>
-  </g>
+  <rect x="45" y="45" width="90" height="90" rx="8" fill="white" opacity="0.95"/>
+  <rect x="52.5" y="52.5" width="75" height="57.5" rx="3" fill="url(#stashy-bg)" opacity="0.85"/>
+  <circle cx="72.5" cy="72.5" r="7" fill="white" opacity="0.9"/>
+  <path d="M57.5 105 L75 85 L95 97.5 L122.5 70 L122.5 110 L57.5 110 Z" fill="white" opacity="0.55"/>
 </svg>

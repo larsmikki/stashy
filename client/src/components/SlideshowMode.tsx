@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useSlideshow } from '@/hooks/useSlideshow';
-import { fullUrl, toggleFavorite } from '@/api/client';
+import { fullUrl, toggleFavorite } from '@/api';
 import { SLIDESHOW_MIN_DELAY_S, SLIDESHOW_MAX_DELAY_S } from '@/constants';
 import { Button } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';

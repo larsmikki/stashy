@@ -13,7 +13,6 @@ RUN npm ci
 COPY tsconfig.base.json ./
 COPY server/ server/
 COPY client/ client/
-COPY shared/ shared/
 
 RUN npm run build -w client
 RUN npm run build -w server

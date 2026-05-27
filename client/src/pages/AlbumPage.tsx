@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getAlbum, getMedia } from '@/api/client';
+import { useQuery } from '@tanstack/react-query';
+import { getAlbum, getMedia } from '@/api';
 import { useMedia } from '@/hooks/useMedia';
 import { useSelection } from '@/hooks/useSelection';
+import { queryKeys } from '@/queryKeys';
 import MediaGrid from '@/components/MediaGrid';
 import SkeletonGrid from '@/components/SkeletonGrid';
 import MediaViewer from '@/components/MediaViewer';
@@ -10,14 +12,13 @@ import SlideshowMode from '@/components/SlideshowMode';
 import SortControls from '@/components/SortControls';
 import SelectionBar from '@/components/SelectionBar';
 
-import type { Album, MediaFile } from '@/types';
+import type { MediaFile } from '@/types';
 import { Button } from '@/components/ui';
 
 export default function AlbumPage() {
   const { id } = useParams<{ id: string }>();
   const albumId = Number(id);
   
-  const [album, setAlbum] = useState<Album | null>(null);
   const [sort, setSort] = useState('date');
   const [order, setOrder] = useState('desc');
   const [viewerMedia, setViewerMedia] = useState<MediaFile | null>(null);
@@ -33,10 +34,11 @@ export default function AlbumPage() {
     order,
     limit: 100,
   });
-
-  useEffect(() => {
-    getAlbum(albumId).then(setAlbum).catch(() => {});
-  }, [albumId]);
+  const { data: album } = useQuery({
+    queryKey: queryKeys.album(albumId),
+    queryFn: () => getAlbum(albumId),
+    enabled: Number.isFinite(albumId),
+  });
 
   const handleMediaClick = (_media: MediaFile, index: number) => {
     setViewerIndex(index);

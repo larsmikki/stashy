@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { getFavorites } from '@/api/client';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
+import { getFavorites } from '@/api';
 import MediaGrid from '@/components/MediaGrid';
 import SkeletonGrid from '@/components/SkeletonGrid';
 import MediaViewer from '@/components/MediaViewer';
@@ -8,61 +9,45 @@ import SelectionBar from '@/components/SelectionBar';
 import { useSelection } from '@/hooks/useSelection';
 import { useToast } from '@/components/ui';
 import { getErrorMessage } from '@/utils/errors';
-import type { MediaFile } from '@/types';
+import { queryKeys } from '@/queryKeys';
+import type { MediaFile, PaginatedResponse } from '@/types';
 
 const PAGE_SIZE = 100;
 
 export default function FavoritesPage() {
   const { addToast } = useToast();
+  const queryClient = useQueryClient();
   const [sort, setSort] = useState('date');
   const [order, setOrder] = useState('desc');
-  const [items, setItems] = useState<MediaFile[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [viewerMedia, setViewerMedia] = useState<MediaFile | null>(null);
   const [viewerIndex, setViewerIndex] = useState(0);
   const selection = useSelection();
-  const fetchToken = useRef(0);
+  const queryKey = queryKeys.favorites(sort, order, PAGE_SIZE);
+  const query = useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam }) => getFavorites({ sort, order, page: pageParam, limit: PAGE_SIZE }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
+  });
+  const items = useMemo(
+    () => query.data?.pages.flatMap(page => page.items) ?? [],
+    [query.data],
+  );
+  const total = query.data?.pages[0]?.total ?? 0;
+  const loading = query.isLoading || query.isFetchingNextPage;
+  const hasMore = query.hasNextPage;
 
   useEffect(() => {
-    const token = ++fetchToken.current;
-    setItems([]);
-    setPage(1);
-    setHasMore(false);
-    setLoading(true);
-    getFavorites({ sort, order, page: 1, limit: PAGE_SIZE })
-      .then((data) => {
-        if (token !== fetchToken.current) return;
-        setItems(data.items);
-        setTotal(data.total);
-        setHasMore(data.page < data.totalPages);
-      })
-      .catch((err) => {
-        if (token !== fetchToken.current) return;
-        addToast(getErrorMessage(err, 'Failed to load favorites'), 'error');
-      })
-      .finally(() => {
-        if (token === fetchToken.current) setLoading(false);
-      });
-  }, [sort, order]);
+    if (query.error) {
+      addToast(getErrorMessage(query.error, 'Failed to load favorites'), 'error');
+    }
+  }, [addToast, query.error]);
 
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
-    const token = fetchToken.current;
-    const next = page + 1;
-    setLoading(true);
-    try {
-      const data = await getFavorites({ sort, order, page: next, limit: PAGE_SIZE });
-      if (token !== fetchToken.current) return;
-      setItems(prev => prev.concat(data.items));
-      setPage(next);
-      setHasMore(next < data.totalPages);
-    } finally {
-      if (token === fetchToken.current) setLoading(false);
-    }
-  }, [sort, order, page, hasMore, loading]);
+    if (!query.hasNextPage || query.isFetchingNextPage) return;
+    await query.fetchNextPage();
+  }, [query]);
 
   const handleMediaClick = (_media: MediaFile, index: number) => {
     setViewerIndex(index);
@@ -70,14 +55,21 @@ export default function FavoritesPage() {
   };
 
   const handleFavoriteToggle = (updated: MediaFile) => {
-    if (!updated.is_favorite) {
-      setItems(prev => prev.filter(m => m.id !== updated.id));
-      setTotal(t => Math.max(0, t - 1));
-      if (viewerMedia?.id === updated.id) setViewerMedia(null);
-    } else {
-      setItems(prev => prev.map(m => m.id === updated.id ? updated : m));
-      if (viewerMedia?.id === updated.id) setViewerMedia(updated);
-    }
+    queryClient.setQueryData<InfiniteData<PaginatedResponse<MediaFile>, number>>(queryKey, (current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        pages: current.pages.map(page => ({
+          ...page,
+          total: updated.is_favorite ? page.total : Math.max(0, page.total - 1),
+          items: updated.is_favorite
+            ? page.items.map(item => item.id === updated.id ? updated : item)
+            : page.items.filter(item => item.id !== updated.id),
+        })),
+      };
+    });
+    if (!updated.is_favorite && viewerMedia?.id === updated.id) setViewerMedia(null);
+    if (updated.is_favorite && viewerMedia?.id === updated.id) setViewerMedia(updated);
   };
 
   return (

@@ -7,7 +7,7 @@ A self-hosted personal media gallery for browsing images and videos over LAN.
 [![ghcr.io](https://img.shields.io/badge/ghcr.io-larsmikki%2Fstashy-blue?logo=github)](https://github.com/larsmikki/stashy/pkgs/container/stashy)
 [![Node 20](https://img.shields.io/badge/Node-20-brightgreen?logo=node.js)](https://nodejs.org/)
 
-![Stashy screenshot](resources/screenshot.png)
+![Stashy screenshot](screenshot.png)
 
 ## Features
 

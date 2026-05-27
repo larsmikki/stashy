@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint ."
   },
   "dependencies": {
     "archiver": "^8.0.0",
@@ -23,6 +24,7 @@
     "sharp": "^0.33.5"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/archiver": "^7.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
@@ -32,8 +34,11 @@
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.10.0",
+    "eslint": "^9.39.4",
+    "globals": "^17.4.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
+    "typescript-eslint": "^8.57.0",
     "vitest": "^4.1.0"
   }
 }

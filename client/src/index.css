@@ -2,7 +2,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@import "../../shared/design-system/tokens.css";
+@import "./tokens.css";
 
 @layer base {
   *, *::before, *::after {

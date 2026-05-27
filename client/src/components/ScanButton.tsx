@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { scanAlbum, getScanStatus } from '@/api/client';
+import { scanAlbum, getScanStatus } from '@/api';
 import { SCAN_POLL_INTERVAL_MS } from '@/constants';
 import { Button } from '@/components/ui';
 

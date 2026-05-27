@@ -7,8 +7,9 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import LoginPage from '@/pages/LoginPage';
 import DonatePage from '@/pages/DonatePage';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthProvider';
+import { ThemeProvider } from '@/contexts/ThemeProvider';
 import { ToastProvider } from '@/components/ui';
 
 function AppRoutes() {

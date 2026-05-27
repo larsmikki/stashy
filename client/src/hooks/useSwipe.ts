@@ -11,12 +11,11 @@ export function useSwipe<T extends HTMLElement>(
 ): RefObject<T | null> {
   const ref = useRef<T>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const { onSwipeLeft, onSwipeRight, threshold = 50 } = options;
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
-    const threshold = options.threshold ?? 50;
 
     const handleTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0];
@@ -35,9 +34,9 @@ export function useSwipe<T extends HTMLElement>(
       if (Math.abs(dx) < threshold) return;
 
       if (dx < 0) {
-        options.onSwipeLeft?.();
+        onSwipeLeft?.();
       } else {
-        options.onSwipeRight?.();
+        onSwipeRight?.();
       }
     };
 
@@ -47,7 +46,7 @@ export function useSwipe<T extends HTMLElement>(
       el.removeEventListener('touchstart', handleTouchStart);
       el.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [options.onSwipeLeft, options.onSwipeRight, options.threshold]);
+  }, [onSwipeLeft, onSwipeRight, threshold]);
 
   return ref;
 }

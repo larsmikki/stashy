@@ -1,23 +1,9 @@
 import {
-  createContext, useCallback, useContext, useEffect, useState,
+  useCallback, useEffect, useState,
   type ReactNode,
 } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
-
-export type ToastType = 'success' | 'error' | 'info'
-
-interface ToastEntry {
-  id: string
-  message: string
-  type: ToastType
-}
-
-interface ToastContextValue {
-  addToast: (message: string, type?: ToastType) => void
-  removeToast: (id: string) => void
-}
-
-const ToastContext = createContext<ToastContextValue | null>(null)
+import { ToastContext, type ToastEntry, type ToastType } from './ToastContext'
 
 const DEFAULT_DURATION_MS = 4000
 
@@ -39,12 +25,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <ToastStack toasts={toasts} onRemove={removeToast} />
     </ToastContext.Provider>
   )
-}
-
-export function useToast() {
-  const ctx = useContext(ToastContext)
-  if (!ctx) throw new Error('useToast must be used inside ToastProvider')
-  return ctx
 }
 
 function ToastStack({

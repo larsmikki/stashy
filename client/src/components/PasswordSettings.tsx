@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LockIcon, UnlockIcon } from '@/components/Layout';
-import * as api from '@/api/client';
+import * as api from '@/api';
 import { Button, Input, Surface } from '@/components/ui';
 
 export default function PasswordSettings() {

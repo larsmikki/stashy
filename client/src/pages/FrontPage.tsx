@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getHome } from '@/api/client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getHome } from '@/api';
 import { getErrorMessage } from '@/utils/errors';
+import { queryKeys } from '@/queryKeys';
 import AlbumRow from '@/components/AlbumRow';
 import MediaViewer from '@/components/MediaViewer';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -11,19 +13,16 @@ import type { HomeAlbum, MediaFile } from '@/types';
 export default function FrontPage() {
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const [albums, setAlbums] = useState<HomeAlbum[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.home,
+    queryFn: getHome,
+  });
   const [viewerMedia, setViewerMedia] = useState<MediaFile | null>(null);
   const [viewerItems, setViewerItems] = useState<MediaFile[]>([]);
   const [viewerIndex, setViewerIndex] = useState(0);
 
-  useEffect(() => {
-    getHome()
-      .then(data => setAlbums(data.albums))
-      .catch(err => setError(getErrorMessage(err, 'Failed to load home')))
-      .finally(() => setLoading(false));
-  }, []);
+  const errorMessage = error ? getErrorMessage(error, 'Failed to load home') : null;
 
   const handleMediaClick = (media: MediaFile, allMedia: MediaFile[]) => {
     const idx = allMedia.findIndex(m => m.id === media.id);
@@ -33,23 +32,31 @@ export default function FrontPage() {
   };
 
   const handleFavoriteToggle = (updated: MediaFile) => {
-    setAlbums(prev => prev.map(album => ({
-      ...album,
-      media: album.media.map(m => m.id === updated.id ? updated : m),
-    })));
+    queryClient.setQueryData<{ albums: HomeAlbum[] }>(queryKeys.home, (current) => {
+      if (!current) return current;
+      return {
+        albums: current.albums.map(album => ({
+          ...album,
+          media: album.media.map(m => m.id === updated.id ? updated : m),
+        })),
+      };
+    });
     if (viewerMedia?.id === updated.id) setViewerMedia(updated);
   };
 
-  const albumsWithMedia = albums.filter(a => a.media.length > 0);
+  const albumsWithMedia = useMemo(
+    () => (data?.albums ?? []).filter(a => a.media.length > 0),
+    [data?.albums],
+  );
 
   return (
     <>
-      {error && (
+      {errorMessage && (
         <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#dc2626' }}>
-          {error}
+          {errorMessage}
         </div>
       )}
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-16" style={{ color: theme.text2 }}>Loading...</div>
       ) : albumsWithMedia.length === 0 ? (
         <div className="text-center py-16">
