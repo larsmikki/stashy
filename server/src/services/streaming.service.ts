@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import ffmpeg from 'fluent-ffmpeg';
+import { spawn } from 'child_process';
 import { config } from '../config.js';
 import { getDb } from '../db/connection.js';
 import { rowToMedia, MEDIA_COLUMNS } from '../utils/db.js';
@@ -43,28 +43,38 @@ export async function startTranscode(media: MediaFile): Promise<void> {
   if (fs.existsSync(playlistPath)) return;
 
   const promise = new Promise<void>((resolve, reject) => {
-    ffmpeg(media.file_path)
-      .outputOptions([
-        '-c:v libx264',
-        '-preset veryfast',
-        '-crf 23',
-        '-c:a aac',
-        '-b:a 128k',
-        '-f hls',
-        '-hls_time 10',
-        '-hls_list_size 0',
-        '-hls_segment_filename', path.join(outputDir, 'segment%03d.ts'),
-      ])
-      .output(playlistPath)
-      .on('end', () => {
-        activeTranscodes.delete(media.id);
+    const ffmpeg = spawn('ffmpeg', [
+      '-i', media.file_path,
+      '-c:v libx264',
+      '-preset veryfast',
+      '-crf 23',
+      '-c:a aac',
+      '-b:a 128k',
+      '-f hls',
+      '-hls_time 10',
+      '-hls_list_size 0',
+      '-hls_segment_filename', path.join(outputDir, 'segment%03d.ts'),
+      playlistPath,
+    ], { stdio: ['ignore', 'ignore', 'pipe'] });
+
+    let stderr = '';
+    ffmpeg.stderr.on('data', chunk => {
+      stderr += chunk.toString();
+    });
+
+    ffmpeg.on('error', (err) => {
+      activeTranscodes.delete(media.id);
+      reject(err);
+    });
+
+    ffmpeg.on('close', (code) => {
+      activeTranscodes.delete(media.id);
+      if (code === 0) {
         resolve();
-      })
-      .on('error', (err) => {
-        activeTranscodes.delete(media.id);
-        reject(err);
-      })
-      .run();
+      } else {
+        reject(new Error(`ffmpeg exited with code ${code}: ${stderr.trim()}`));
+      }
+    });
   });
 
   activeTranscodes.set(media.id, promise);

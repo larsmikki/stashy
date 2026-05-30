@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { execFile } from 'child_process';
+import { execFile, spawn } from 'child_process';
 import sharp from 'sharp';
-import ffmpeg from 'fluent-ffmpeg';
 import { getDb } from '../db/connection.js';
 import { config } from '../config.js';
 import { rowToMedia, MEDIA_COLUMNS } from '../utils/db.js';
@@ -35,9 +34,19 @@ function getThumbPath(albumId: number, mediaId: number): string {
 
 function getVideoDuration(filePath: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
+    execFile('ffprobe', [
+      '-v', 'error',
+      '-show_entries', 'format=duration',
+      '-of', 'default=noprint_wrappers=1:nokey=1',
+      filePath,
+    ], (err, stdout, stderr) => {
       if (err) return reject(err);
-      resolve(metadata.format.duration || 0);
+      const duration = Number.parseFloat(stdout.trim());
+      if (Number.isNaN(duration)) {
+        reject(new Error(`Unable to read video duration: ${stderr.trim()}`));
+        return;
+      }
+      resolve(duration);
     });
   });
 }
@@ -52,14 +61,28 @@ async function generateImageThumbnail(inputPath: string, outputPath: string): Pr
 function generateVideoThumbnail(inputPath: string, outputPath: string, duration: number): Promise<void> {
   return new Promise((resolve, reject) => {
     const seekTime = Math.max(0, duration * 0.25);
-    ffmpeg(inputPath)
-      .seekInput(seekTime)
-      .frames(1)
-      .size(`${config.thumbnailWidth}x?`)
-      .output(outputPath)
-      .on('end', () => resolve())
-      .on('error', (err) => reject(err))
-      .run();
+    const ffmpeg = spawn('ffmpeg', [
+      '-ss', String(seekTime),
+      '-i', inputPath,
+      '-frames:v', '1',
+      '-vf', `scale=${config.thumbnailWidth}:-1`,
+      '-y',
+      outputPath,
+    ], { stdio: ['ignore', 'ignore', 'pipe'] });
+
+    let stderr = '';
+    ffmpeg.stderr.on('data', chunk => {
+      stderr += chunk.toString();
+    });
+
+    ffmpeg.on('error', reject);
+    ffmpeg.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`ffmpeg exited with code ${code}: ${stderr.trim()}`));
+      }
+    });
   });
 }
 
@@ -212,4 +235,3 @@ export function startThumbnailGeneration(albumId: number, retryFailed = true): b
 export function isThumbGenerationActive(albumId: number): boolean {
   return activeThumbGenIds.has(albumId);
 }
-

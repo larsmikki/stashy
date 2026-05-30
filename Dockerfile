@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 
 RUN apk add --no-cache python3 make g++
 
@@ -18,7 +18,7 @@ RUN npm run build -w client
 RUN npm run build -w server
 
 # --- Production stage ---
-FROM node:20-alpine
+FROM node:26-alpine
 
 # ffmpeg/curl are runtime deps; python3/make/g++ are needed only to build
 # better-sqlite3 from source (no Alpine/musl prebuilds), then removed.

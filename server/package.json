@@ -19,9 +19,8 @@
     "cors": "^2.8.5",
     "exifr": "^7.1.3",
     "express": "^4.21.0",
-    "fluent-ffmpeg": "^2.1.3",
     "morgan": "^1.10.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -31,14 +30,13 @@
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/fluent-ffmpeg": "^2.1.27",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^22.10.0",
+    "@types/node": "^25.9.1",
     "eslint": "^9.39.4",
     "globals": "^17.4.0",
-    "tsx": "^4.19.0",
+    "tsx": "^4.22.3",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.57.0",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.7"
   }
 }
